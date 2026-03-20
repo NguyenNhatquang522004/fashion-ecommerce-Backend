@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+// 1. Phải khớp 100% với cấu trúc thư mục logic của bạn
+option java_multiple_files = true;
+option java_package = "io.github.nguyennhatquang.fashion.common.grpc"; 
+option java_outer_classname = "IdentityProto";
+
+package identity;
+
+service IdentityService {
+  rpc GetUserInfo (UserInfoRequest) returns (UserInfoResponse);
+}
+
+message UserInfoRequest {
+  string user_id = 1;
+}
+
+message UserInfoResponse {
+  string user_id = 1;
+  string full_name = 2;
+  string email = 3;
+}
