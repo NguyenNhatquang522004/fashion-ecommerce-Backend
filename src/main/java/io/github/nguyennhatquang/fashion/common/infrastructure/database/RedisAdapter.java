@@ -3,13 +3,13 @@ package io.github.nguyennhatquang.fashion.common.infrastructure.database;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.github.nguyennhatquang.fashion.common.shared.IRedis;
 
-@Repository
+@Service
 public class RedisAdapter implements IRedis {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper; // Dùng để convert data an toàn khi get
