@@ -1,0 +1,42 @@
+package io.github.nguyennhatquang.fashion.common.shared;
+
+import java.util.Optional;
+
+public interface IKeycloak {
+    // Record DTO nội bộ để truyền dữ liệu
+    record UserRegistrationCmd(String username, String email, String firstName, String lastName, String password) {
+    }
+
+    record UserRepresentationDto(String id, String username, String email) {
+    }
+    record UserCreatedResult(String keycloakId, String username, String email) {}
+    /**
+     * Tạo user mới và trả về User ID (UUID) được Identity Provider sinh ra.
+     */
+    UserCreatedResult createUser(UserRegistrationCmd command);
+
+    /**
+     * Tìm kiếm user theo Username
+     */
+    Optional<UserRepresentationDto> findByUsername(String username);
+
+    /**
+     * Gán Role cho một User
+     */
+    void assignRole(String userId, String roleName);
+
+    /**
+     * Xóa User
+     */
+    void deleteUser(String userId);
+
+    /**
+     * Cập nhật mật khẩu
+     */
+    void resetPassword(String userId, String newPassword);
+    void getAllRoles();
+    void updateRole(String roleId, String newRoleName);
+    void addRole(String roleName);
+    void deleteRole(String roleName);
+
+}
