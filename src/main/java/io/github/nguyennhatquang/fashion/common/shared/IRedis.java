@@ -21,4 +21,10 @@ public interface IRedis {
 
     // Distributed Lock basic
     boolean setIfAbsent(String key, Object value, long timeout, TimeUnit unit);
+
+    String getAsString(String key);
+
+    Long getExpire(String key, TimeUnit unit);
+
+    boolean compareAndSet(String key, String expectedValue, String newValue, long timeout, TimeUnit unit);
 }

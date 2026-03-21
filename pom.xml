@@ -310,6 +310,7 @@
                         <path>
                             <groupId>org.springframework.boot</groupId>
                             <artifactId>spring-boot-configuration-processor</artifactId>
+                            <optional>true</optional>
                         </path>
                         <path>
                             <groupId>org.projectlombok</groupId>
