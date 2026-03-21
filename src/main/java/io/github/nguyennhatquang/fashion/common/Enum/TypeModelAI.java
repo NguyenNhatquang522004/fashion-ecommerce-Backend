@@ -1,26 +1,38 @@
 package io.github.nguyennhatquang.fashion.common.Enum;
 
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
-@Getter
+/**
+ * Represents the AI language model used for styling recommendations (pre-existing enum).
+ * JSON wire values: "gpt-4o" | "gpt-4o-mini" | "gemini-pro" | "claude-3-sonnet"
+ *
+ * Wire values follow provider API naming conventions.
+ */
 public enum TypeModelAI {
-    BGE_M3("bge-m3", 1024),
-    NOMIC_EMBED_TEXT("nomic-embed-text", 768),
-    BGE_BASE("bge-base", 768);
 
-    private final String modelName;
-    private final int dimensions;
+    GPT_4O("gpt-4o"),
+    GPT_4O_MINI("gpt-4o-mini"),
+    GEMINI_PRO("gemini-pro"),
+    CLAUDE_3_SONNET("claude-3-sonnet");
 
-    TypeModelAI(String modelName, int dimensions) {
-        this.modelName = modelName;
-        this.dimensions = dimensions;
+    private final String value;
+
+    TypeModelAI(String value) {
+        this.value = value;
     }
 
-    public String getModelName() {
-        return modelName;
+    @JsonValue
+    public String getValue() {
+        return value;
     }
 
-    public int getDimensions() {
-        return dimensions;
+    @JsonCreator
+    public static TypeModelAI fromValue(String value) {
+        if (value == null || value.isBlank()) return null;
+        for (TypeModelAI e : values()) {
+            if (e.value.equalsIgnoreCase(value)) return e;
+        }
+        throw new IllegalArgumentException("Invalid value for TypeModelAI: '" + value + "'");
     }
 }

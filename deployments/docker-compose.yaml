@@ -10,7 +10,7 @@ services:
     container_name: pgvector
     restart: unless-stopped
     environment:
-      POSTGRES_DB: mydatabase
+      POSTGRES_DB: fashion-ecommerce
       POSTGRES_USER: myuser
       POSTGRES_PASSWORD: secret
     labels:
@@ -21,8 +21,9 @@ services:
       - fashion-ecommerce-network
     volumes:
       - pgvector-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U myuser -d mydatabase"]
+      test: ["CMD-SHELL", "pg_isready -U myuser -d fashion-ecommerce || exit 1"]
       interval: 20s
       timeout: 5s
       retries: 5
@@ -31,7 +32,7 @@ services:
   # ─────────────────────────────────────────────────────────────
   # Adminer – UI for PostgreSQL / pgvector
   #   URL: http://localhost:8081
-  #   System: PostgreSQL | Server: pgvector | DB: mydatabase
+  #   System: PostgreSQL | Server: pgvector | DB: fashion-ecommerce
   # ─────────────────────────────────────────────────────────────
   pgvector-adminer:
     image: 'adminer:4'
