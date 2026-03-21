@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 public enum AiGuardrailActionEnum {
 
     BLOCK("block"),
-    REDIRECT("redirect");
+    REDIRECT("redirect"); 
 
     private final String value;
 

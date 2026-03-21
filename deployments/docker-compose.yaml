@@ -354,6 +354,8 @@ services:
       POSTGRES_DB: keycloak
       POSTGRES_USER: keycloak
       POSTGRES_PASSWORD: keycloak_secret
+    ports:
+      - "5433:5432"
     networks:
       - fashion-ecommerce-network
     volumes:
@@ -364,7 +366,6 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
-
   # ─────────────────────────────────────────────────────────────
   # Keycloak – Identity & Access Management
   #   Admin console : http://localhost:8180/admin

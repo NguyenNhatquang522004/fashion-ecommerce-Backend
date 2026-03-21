@@ -21,8 +21,6 @@ public enum AddressTypeEnum {
 
     private final String value;
 
-
-
     @JsonValue
     public String getValue() {
         return value;
@@ -37,6 +35,5 @@ public enum AddressTypeEnum {
                 return e;
         }
         throw new IllegalArgumentException("Invalid value for AddressTypeEnum: '" + value + "'");
-    }}
-            
-                
+    }
+}

@@ -19,7 +19,6 @@ import javax.sql.DataSource;
 @RequiredArgsConstructor
 public class PostgresDataSourceConfig {
 
-    // Inject class properties bạn vừa tạo
     private final CommonHikariProperties properties;
 
     @Bean
