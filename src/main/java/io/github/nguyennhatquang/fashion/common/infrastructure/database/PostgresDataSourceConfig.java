@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
@@ -65,5 +67,13 @@ public class PostgresDataSourceConfig {
     @Bean
     public NamedParameterJdbcTemplate namedParameterJdbcTemplate(DataSource dataSource) {
         return new NamedParameterJdbcTemplate(dataSource);
+    }
+
+    @Bean("postgresTransactionManager")
+    @Primary // Ưu tiên thằng này làm mặc định nếu dùng @Transactional không truyền tên
+    public PlatformTransactionManager postgresTransactionManager(DataSource dataSource) {
+        return new DataSourceTransactionManager(dataSource);
+        // Nếu bạn dùng Spring Data JPA thay vì JdbcTemplate, hãy dùng
+        // JpaTransactionManager
     }
 }

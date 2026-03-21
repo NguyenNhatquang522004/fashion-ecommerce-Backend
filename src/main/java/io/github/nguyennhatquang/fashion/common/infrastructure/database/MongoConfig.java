@@ -17,13 +17,13 @@ import java.util.Collections;
 @EnableMongoAuditing // Best Practice: Tự động điền @CreatedDate, @LastModifiedDate cho toàn bộ hệ
                      // thống
 public class MongoConfig {
-
+    // @Transactional("mongoTransactionManager")
     /**
      * Best Practice 1: Bật Transaction Manager. Bắt buộc phải có để hỗ trợ tính
      * chất ACID (yêu cầu MongoDB cấu hình Replica Set). Rất quan trọng cho các
      * nghiệp vụ phức tạp đòi hỏi tính nhất quán dữ liệu cao.
      */
-    @Bean
+    @Bean("mongoTransactionManager")
     public MongoTransactionManager transactionManager(MongoDatabaseFactory dbFactory) {
         return new MongoTransactionManager(dbFactory);
     }

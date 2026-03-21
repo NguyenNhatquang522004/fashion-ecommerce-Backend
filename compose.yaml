@@ -1,12 +1,523 @@
+version: '3.8'
+name: fashion-ecommerce
 services:
+
+  # ─────────────────────────────────────────────────────────────
+  # PostgreSQL + pgvector  (application database)
+  # ─────────────────────────────────────────────────────────────
   pgvector:
     image: 'pgvector/pgvector:pg16'
+    container_name: pgvector
+    restart: unless-stopped
     environment:
-      - 'POSTGRES_DB=mydatabase'
-      - 'POSTGRES_PASSWORD=secret'
-      - 'POSTGRES_USER=myuser'
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: secret
     labels:
       - "org.springframework.boot.service-connection=postgres"
     ports:
-      - '5432'
-    
+      - '5432:5432'
+    networks:
+      - fashion-ecommerce-network
+    volumes:
+      - pgvector-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d mydatabase"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ─────────────────────────────────────────────────────────────
+  # Adminer – UI for PostgreSQL / pgvector
+  #   URL: http://localhost:8081
+  #   System: PostgreSQL | Server: pgvector | DB: mydatabase
+  # ─────────────────────────────────────────────────────────────
+  pgvector-adminer:
+    image: 'adminer:4'
+    container_name: pgvector-adminer
+    restart: unless-stopped
+    ports:
+      - '8081:8080'
+    environment:
+      ADMINER_DEFAULT_SERVER: pgvector
+    networks:
+      - fashion-ecommerce-network
+    depends_on:
+      pgvector:
+        condition: service_healthy
+
+  # ─────────────────────────────────────────────────────────────
+  # Redis
+  # ─────────────────────────────────────────────────────────────
+  redis:
+    image: 'redis:7.2-alpine'
+    container_name: redis
+    restart: unless-stopped
+    command: redis-server --save 60 1 --loglevel warning
+    ports:
+      - '6379:6379'
+    networks:
+      - fashion-ecommerce-network
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # ─────────────────────────────────────────────────────────────
+  # Redis Commander – web UI for Redis
+  #   URL: http://localhost:8082
+  # ─────────────────────────────────────────────────────────────
+  redis-commander:
+    image: 'rediscommander/redis-commander:latest'
+    container_name: redis-commander
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - '8082:8081'
+    networks:
+      - fashion-ecommerce-network
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  # ─────────────────────────────────────────────────────────────
+  # Neo4j  (built-in browser UI on port 7474)
+  #   Browser UI: http://localhost:7474
+  # ─────────────────────────────────────────────────────────────
+  neo4j:
+    image: 'neo4j:5.18'
+    container_name: neo4j
+    restart: unless-stopped
+    environment:
+      NEO4J_AUTH: neo4j/secret
+      NEO4J_PLUGINS: '["apoc"]'
+      NEO4J_dbms_memory_heap_initial__size: 256m
+      NEO4J_dbms_memory_heap_max__size: 512m
+    ports:
+      - '7474:7474'   # HTTP browser
+      - '7687:7687'   # Bolt
+    networks:
+      - fashion-ecommerce-network
+    volumes:
+      - neo4j-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:7474 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # ─────────────────────────────────────────────────────────────
+  # Elasticsearch
+  # ─────────────────────────────────────────────────────────────
+  elasticsearch:
+    image: 'elasticsearch:7.17.9'
+    container_name: elasticsearch
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      xpack.security.enabled: 'false'
+    ports:
+      - '9200:9200'
+    networks:
+      - fashion-ecommerce-network
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:9200/_cluster/health | grep -vq '\"status\":\"red\"'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # ─────────────────────────────────────────────────────────────
+  # Kibana – UI for Elasticsearch
+  #   URL: http://localhost:5601
+  # ─────────────────────────────────────────────────────────────
+  kibana:
+    image: 'kibana:7.17.9'
+    container_name: kibana
+    restart: unless-stopped
+    environment:
+      ELASTICSEARCH_HOSTS: 'http://elasticsearch:9200'
+    ports:
+      - '5601:5601'
+    networks:
+      - fashion-ecommerce-network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:5601/api/status | grep -q 'available'"]
+      interval: 30s
+      timeout: 15s
+      retries: 10
+      start_period: 120s
+
+  # ─────────────────────────────────────────────────────────────
+  # MongoDB
+  # ─────────────────────────────────────────────────────────────
+  mongodb:
+    image: 'mongo:7.0'
+    container_name: mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: secret
+    ports:
+      - '27017:27017'
+    networks:
+      - fashion-ecommerce-network
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # ─────────────────────────────────────────────────────────────
+  # Mongo Express – web UI for MongoDB
+  #   URL: http://localhost:8083
+  # ─────────────────────────────────────────────────────────────
+  mongo-express:
+    image: 'mongo-express:1.0'
+    container_name: mongo-express
+    restart: unless-stopped
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: secret
+      ME_CONFIG_MONGODB_URL: 'mongodb://admin:secret@mongodb:27017/'
+      ME_CONFIG_BASICAUTH: 'false'
+    ports:
+      - '8083:8081'
+    networks:
+      - fashion-ecommerce-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+  # ─────────────────────────────────────────────────────────────
+  # Cassandra – single-node, production-ready
+  # ─────────────────────────────────────────────────────────────
+  cassandra:
+    image: 'cassandra:5.0'
+    container_name: cassandra
+    restart: unless-stopped
+    environment:
+      CASSANDRA_CLUSTER_NAME: FashionCluster
+      CASSANDRA_DC: dc1
+      CASSANDRA_RACK: rack1
+      CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
+      CASSANDRA_NUM_TOKENS: 256
+      HEAP_NEWSIZE: 128M
+      MAX_HEAP_SIZE: 512M
+    ports:
+      - '9042:9042'        # CQL native transport
+    networks:
+      - fashion-ecommerce-network
+    volumes:
+      - cassandra-data:/var/lib/cassandra
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "describe keyspaces"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 90s
+
+  # ─────────────────────────────────────────────────────────────
+  # Cassandra Web – browser UI for Cassandra
+  #   URL: http://localhost:8084
+  # ─────────────────────────────────────────────────────────────
+  cassandra-web:
+    image: 'ipushc/cassandra-web:latest'
+    container_name: cassandra-web
+    restart: unless-stopped
+    environment:
+      CASSANDRA_HOST: cassandra
+      CASSANDRA_PORT: 9042
+    ports:
+      - '8084:80'
+    networks:
+      - fashion-ecommerce-network
+    depends_on:
+      cassandra:
+        condition: service_healthy
+
+  # ─────────────────────────────────────────────────────────────
+  # Zookeeper – coordinator required by Kafka
+  # ─────────────────────────────────────────────────────────────
+  zookeeper:
+    image: 'confluentinc/cp-zookeeper:7.6.1'
+    container_name: zookeeper
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_SYNC_LIMIT: 2
+    ports:
+      - '2181:2181'
+    networks:
+      - fashion-ecommerce-network
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+      - zookeeper-log:/var/lib/zookeeper/log
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo ruok | nc localhost 2181 | grep imok"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # ─────────────────────────────────────────────────────────────
+  # Kafka broker – Confluent Platform, production-ready
+  #   INTERNAL  listener: kafka:9092   (container ↔ container)
+  #   EXTERNAL  listener: localhost:29092  (host ↔ container)
+  # ─────────────────────────────────────────────────────────────
+  kafka:
+    image: 'confluentinc/cp-kafka:7.6.1'
+    container_name: kafka
+    restart: unless-stopped
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENERS: 'INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:29092'
+      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://kafka:9092,EXTERNAL://localhost:29092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+      KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 300000
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_HEAP_OPTS: '-Xmx512M -Xms256M'
+    ports:
+      - '29092:29092'
+    networks:
+      - fashion-ecommerce-network
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 30s
+      timeout: 15s
+      retries: 10
+      start_period: 60s
+
+  # ─────────────────────────────────────────────────────────────
+  # Kafka UI – web management console for Kafka
+  #   URL: http://localhost:8090
+  # ─────────────────────────────────────────────────────────────
+  kafka-ui:
+    image: 'provectuslabs/kafka-ui:latest'
+    container_name: kafka-ui
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_CLUSTERS_0_NAME: fashion-ecommerce
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka:9092'
+      KAFKA_CLUSTERS_0_ZOOKEEPER: 'zookeeper:2181'
+      SERVER_PORT: 8090
+    ports:
+      - '8090:8090'
+    networks:
+      - fashion-ecommerce-network
+
+  # ─────────────────────────────────────────────────────────────
+  # Keycloak – PostgreSQL backend (dedicated, isolated DB)
+  # ─────────────────────────────────────────────────────────────
+  keycloak-db:
+    image: 'postgres:16-alpine'
+    container_name: keycloak-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak_secret
+    networks:
+      - fashion-ecommerce-network
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak -d keycloak"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ─────────────────────────────────────────────────────────────
+  # Keycloak – Identity & Access Management
+  #   Admin console : http://localhost:8180/admin
+  #   Default realm : master
+  #   Admin creds   : admin / admin_secret  (change in prod!)
+  # ─────────────────────────────────────────────────────────────
+  keycloak:
+    image: 'quay.io/keycloak/keycloak:24.0'
+    container_name: keycloak
+    restart: unless-stopped
+    command: start-dev
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    environment:
+      # Database
+      KC_DB: postgres
+      KC_DB_URL: 'jdbc:postgresql://keycloak-db:5432/keycloak'
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak_secret
+      # Admin bootstrap credentials
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin_secret
+      # Runtime
+      KC_HTTP_PORT: 8080
+      KC_HOSTNAME_STRICT: 'false'
+      KC_HOSTNAME_STRICT_HTTPS: 'false'
+      KC_HTTP_ENABLED: 'true'
+      KC_PROXY: edge
+      KC_FEATURES: token-exchange,admin-fine-grained-authz
+      KC_LOG_LEVEL: INFO
+    ports:
+      - '8180:8080'       # Admin + OIDC endpoint
+    networks:
+      - fashion-ecommerce-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:8080/health/ready || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+
+  # ─────────────────────────────────────────────────────────────
+  # SeaweedFS – distributed object / blob store
+  #
+  #  Architecture:
+  #    master      – cluster coordinator, metadata tracker
+  #    volume      – actual data storage node
+  #    filer       – POSIX-style namespace + metadata DB (leveldb)
+  #    s3          – Amazon S3-compatible API gateway
+  #
+  #  Useful URLs (after stack up):
+  #    Master UI  : http://localhost:9333
+  #    Filer REST : http://localhost:8888
+  #    S3 API     : http://localhost:8333
+  #    SeaweedFS shell: docker exec -it seaweedfs-master weed shell
+  # ─────────────────────────────────────────────────────────────
+  seaweedfs-master:
+    image: 'chrislusf/seaweedfs:latest'
+    container_name: seaweedfs-master
+    restart: unless-stopped
+    command: master -ip=seaweedfs-master -port=9333 -mdir=/data
+    ports:
+      - '9333:9333'       # HTTP API + built-in web UI
+      - '19333:19333'     # gRPC
+    networks:
+      - fashion-ecommerce-network
+    volumes:
+      - seaweedfs-master-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9333/cluster/status || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  seaweedfs-volume:
+    image: 'chrislusf/seaweedfs:latest'
+    container_name: seaweedfs-volume
+    restart: unless-stopped
+    command: volume -mserver=seaweedfs-master:9333 -port=8080 -dir=/data -max=5
+    depends_on:
+      seaweedfs-master:
+        condition: service_healthy
+    ports:
+      - '8085:8080'       # Volume server HTTP
+    networks:
+      - fashion-ecommerce-network
+    volumes:
+      - seaweedfs-volume-data:/data
+
+  seaweedfs-filer:
+    image: 'chrislusf/seaweedfs:latest'
+    container_name: seaweedfs-filer
+    restart: unless-stopped
+    command: filer -master=seaweedfs-master:9333 -port=8888
+    depends_on:
+      seaweedfs-master:
+        condition: service_healthy
+    ports:
+      - '8888:8888'       # Filer REST API
+      - '18888:18888'     # gRPC
+    networks:
+      - fashion-ecommerce-network
+    volumes:  
+      - seaweedfs-filer-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8888/ || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  seaweedfs-s3:
+    image: 'chrislusf/seaweedfs:latest'
+    container_name: seaweedfs-s3
+    restart: unless-stopped
+    command: s3 -filer=seaweedfs-filer:8888 -port=8333 -allowEmptyFolder=true
+    depends_on:
+      seaweedfs-filer:
+        condition: service_healthy
+    ports:
+      - '8333:8333'       # S3-compatible API (use as endpoint for SDKs)
+    networks:
+      - fashion-ecommerce-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8333/ || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+# ═══════════════════════════════════════════════════════════════
+# Networks
+# ═══════════════════════════════════════════════════════════════
+networks:
+  fashion-ecommerce-network:
+    driver: bridge
+
+# ═══════════════════════════════════════════════════════════════
+# Named volumes – data persisted across container restarts
+# ═══════════════════════════════════════════════════════════════
+volumes:
+  # Application databases
+  pgvector-data:
+  redis-data:
+  neo4j-data:
+  elasticsearch-data:
+  mongo-data:
+  cassandra-data:
+  # Messaging
+  zookeeper-data:
+  zookeeper-log:
+  kafka-data:
+  # Auth
+  keycloak-db-data:
+  # Object store
+  seaweedfs-master-data:
+  seaweedfs-volume-data:
+  seaweedfs-filer-data:
