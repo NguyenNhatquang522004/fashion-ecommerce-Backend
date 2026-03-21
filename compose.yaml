@@ -220,6 +220,9 @@ services:
       CASSANDRA_NUM_TOKENS: 256
       HEAP_NEWSIZE: 128M
       MAX_HEAP_SIZE: 512M
+      # Bật xác thực bằng username/password (default user: cassandra/cassandra)
+      CASSANDRA_AUTHENTICATOR: PasswordAuthenticator
+      CASSANDRA_AUTHORIZER: CassandraAuthorizer
     ports:
       - '9042:9042'        # CQL native transport
     networks:
