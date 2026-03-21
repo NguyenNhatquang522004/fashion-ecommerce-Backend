@@ -27,7 +27,7 @@ public class AiAdapter implements IAI {
     public float[] generateRawEmbedding(String text, TypeModelAI typeModel) {
         // Trong Spring AI 2.x, bắt buộc dùng Builder pattern
         var options = OllamaEmbeddingOptions.builder()
-                .model(typeModel.getModelName()) // Chỉ định model bge-m3
+                .model(typeModel.getValue()) // Chỉ định model bge-m3
                 .build();
 
         // Tạo request chứa text cần nhúng và options (chỉ định model bge-m3)

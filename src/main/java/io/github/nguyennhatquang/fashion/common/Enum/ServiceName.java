@@ -3,11 +3,16 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents a microservice name within the platform (Cassandra).
  * JSON wire values: "order-service" | "inventory-service" | "payment-service"
  *                 | "notification-service" | "api-gateway"
  */
+@Getter
+@RequiredArgsConstructor
 public enum ServiceName {
 
     ORDER_SERVICE("order-service"),
@@ -18,9 +23,6 @@ public enum ServiceName {
 
     private final String value;
 
-    ServiceName(String value) {
-        this.value = value;
-    }
 
     @JsonValue
     public String getValue() {

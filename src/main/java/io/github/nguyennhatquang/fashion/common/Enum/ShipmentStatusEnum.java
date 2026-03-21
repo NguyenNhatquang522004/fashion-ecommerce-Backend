@@ -3,11 +3,16 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the tracking status of a shipment.
  * PostgreSQL type: shipment_status_enum
  * JSON wire values: "preparing" | "picked_up" | "in_transit" | "delivered" | "returned"
  */
+@Getter
+@RequiredArgsConstructor
 public enum ShipmentStatusEnum {
 
     PREPARING("preparing"),
@@ -18,9 +23,7 @@ public enum ShipmentStatusEnum {
 
     private final String value;
 
-    ShipmentStatusEnum(String value) {
-        this.value = value;
-    }
+
 
     @JsonValue
     public String getValue() {

@@ -3,11 +3,16 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the third-party logistics carrier used for shipment.
  * PostgreSQL type: shipment_provider_enum
  * JSON wire values: "ghn" | "ghtk" | "ninjavan"
  */
+@Getter
+@RequiredArgsConstructor
 public enum ShipmentProviderEnum {
 
     GHN("ghn"),
@@ -15,10 +20,6 @@ public enum ShipmentProviderEnum {
     NINJAVAN("ninjavan");
 
     private final String value;
-
-    ShipmentProviderEnum(String value) {
-        this.value = value;
-    }
 
     @JsonValue
     public String getValue() {

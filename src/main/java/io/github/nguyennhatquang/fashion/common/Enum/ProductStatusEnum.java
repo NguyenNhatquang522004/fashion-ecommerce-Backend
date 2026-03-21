@@ -3,11 +3,16 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the publication status of a product in the catalog.
  * MongoDB field type: String (stored as lowercase value)
  * JSON wire values: "draft" | "active" | "archived"
  */
+@Getter
+@RequiredArgsConstructor
 public enum ProductStatusEnum {
 
     DRAFT("draft"),
@@ -16,9 +21,6 @@ public enum ProductStatusEnum {
 
     private final String value;
 
-    ProductStatusEnum(String value) {
-        this.value = value;
-    }
 
     @JsonValue
     public String getValue() {

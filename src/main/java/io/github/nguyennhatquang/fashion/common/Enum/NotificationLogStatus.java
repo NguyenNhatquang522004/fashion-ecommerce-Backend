@@ -3,10 +3,15 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the delivery status of a notification log entry (Cassandra).
  * JSON wire values: "sent" | "delivered" | "failed" | "read"
  */
+@Getter
+@RequiredArgsConstructor
 public enum NotificationLogStatus {
 
     SENT("sent"),
@@ -16,9 +21,7 @@ public enum NotificationLogStatus {
 
     private final String value;
 
-    NotificationLogStatus(String value) {
-        this.value = value;
-    }
+
 
     @JsonValue
     public String getValue() {

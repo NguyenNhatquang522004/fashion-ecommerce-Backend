@@ -3,11 +3,16 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the status of a payment transaction.
  * PostgreSQL type: payment_status_enum
  * JSON wire values: "pending" | "success" | "failed" | "refunded"
  */
+@Getter
+@RequiredArgsConstructor
 public enum PaymentStatusEnum {
 
     PENDING("pending"),
@@ -17,9 +22,6 @@ public enum PaymentStatusEnum {
 
     private final String value;
 
-    PaymentStatusEnum(String value) {
-        this.value = value;
-    }
 
     @JsonValue
     public String getValue() {

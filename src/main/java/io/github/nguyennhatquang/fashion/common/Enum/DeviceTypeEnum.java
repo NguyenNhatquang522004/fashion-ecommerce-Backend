@@ -3,11 +3,16 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the type of device for push notification targeting.
  * PostgreSQL type: device_type_enum
  * JSON wire values: "ios" | "android" | "web"
  */
+@Getter
+@RequiredArgsConstructor
 public enum DeviceTypeEnum {
 
     IOS("ios"),
@@ -16,9 +21,6 @@ public enum DeviceTypeEnum {
 
     private final String value;
 
-    DeviceTypeEnum(String value) {
-        this.value = value;
-    }
 
     @JsonValue
     public String getValue() {

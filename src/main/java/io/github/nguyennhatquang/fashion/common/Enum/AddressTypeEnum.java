@@ -3,11 +3,16 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the type of a user address.
  * PostgreSQL type: address_type_enum
  * JSON wire values: "home" | "work" | "other"
  */
+@Getter
+@RequiredArgsConstructor
 public enum AddressTypeEnum {
 
     HOME("home"),
@@ -16,9 +21,7 @@ public enum AddressTypeEnum {
 
     private final String value;
 
-    AddressTypeEnum(String value) {
-        this.value = value;
-    }
+
 
     @JsonValue
     public String getValue() {

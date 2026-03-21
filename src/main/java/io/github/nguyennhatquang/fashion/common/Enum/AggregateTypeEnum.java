@@ -3,11 +3,16 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the aggregate/domain an outbox event belongs to.
  * PostgreSQL type: aggregate_type_enum
  * JSON wire values: "order" | "inventory" | "payment" | "notification"
  */
+@Getter
+@RequiredArgsConstructor
 public enum AggregateTypeEnum {
 
     ORDER("order"),
@@ -17,9 +22,6 @@ public enum AggregateTypeEnum {
 
     private final String value;
 
-    AggregateTypeEnum(String value) {
-        this.value = value;
-    }
 
     @JsonValue
     public String getValue() {

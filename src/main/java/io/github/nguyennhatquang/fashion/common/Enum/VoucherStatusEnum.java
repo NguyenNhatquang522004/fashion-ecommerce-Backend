@@ -3,11 +3,16 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the lifecycle status of a discount voucher.
  * PostgreSQL type: voucher_status_enum
  * JSON wire values: "active" | "inactive" | "expired"
  */
+@Getter
+@RequiredArgsConstructor
 public enum VoucherStatusEnum {
 
     ACTIVE("active"),
@@ -16,9 +21,7 @@ public enum VoucherStatusEnum {
 
     private final String value;
 
-    VoucherStatusEnum(String value) {
-        this.value = value;
-    }
+
 
     @JsonValue
     public String getValue() {

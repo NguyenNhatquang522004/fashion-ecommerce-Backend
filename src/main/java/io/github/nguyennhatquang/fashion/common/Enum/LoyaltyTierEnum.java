@@ -3,11 +3,16 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the loyalty tier level of a user.
  * PostgreSQL type: loyalty_tier_enum
  * JSON wire values: "bronze" | "silver" | "gold" | "platinum"
  */
+@Getter
+@RequiredArgsConstructor
 public enum LoyaltyTierEnum {
 
     BRONZE("bronze"),
@@ -17,9 +22,6 @@ public enum LoyaltyTierEnum {
 
     private final String value;
 
-    LoyaltyTierEnum(String value) {
-        this.value = value;
-    }
 
     @JsonValue
     public String getValue() {

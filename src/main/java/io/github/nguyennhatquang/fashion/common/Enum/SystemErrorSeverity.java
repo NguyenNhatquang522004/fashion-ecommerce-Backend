@@ -3,10 +3,15 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the severity level of a system error log entry (Cassandra).
  * JSON wire values: "info" | "warning" | "error" | "critical"
  */
+@Getter
+@RequiredArgsConstructor
 public enum SystemErrorSeverity {
 
     INFO("info"),
@@ -16,9 +21,6 @@ public enum SystemErrorSeverity {
 
     private final String value;
 
-    SystemErrorSeverity(String value) {
-        this.value = value;
-    }
 
     @JsonValue
     public String getValue() {

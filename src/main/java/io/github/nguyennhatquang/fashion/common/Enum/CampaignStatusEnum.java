@@ -22,9 +22,6 @@ public enum CampaignStatusEnum {
 
     private final String value;
 
-    CampaignStatusEnum(String value) {
-        this.value = value;
-    }
 
     @JsonValue
     public String getValue() {

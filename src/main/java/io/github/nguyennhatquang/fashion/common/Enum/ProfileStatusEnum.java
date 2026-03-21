@@ -3,11 +3,16 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the status of a user profile account.
  * PostgreSQL type: profile_status_enum
  * JSON wire values: "active" | "inactive" | "banned"
  */
+@Getter
+@RequiredArgsConstructor
 public enum ProfileStatusEnum {
 
     ACTIVE("active"),
@@ -16,9 +21,6 @@ public enum ProfileStatusEnum {
 
     private final String value;
 
-    ProfileStatusEnum(String value) {
-        this.value = value;
-    }
 
     @JsonValue
     public String getValue() {

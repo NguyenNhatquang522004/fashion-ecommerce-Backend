@@ -3,11 +3,16 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents individual steps within the order creation saga.
  * PostgreSQL type: saga_step_enum
  * JSON wire values: "reserve_inventory" | "process_payment" | "complete_order"
  */
+@Getter
+@RequiredArgsConstructor
 public enum SagaStepEnum {
 
     RESERVE_INVENTORY("reserve_inventory"),
@@ -15,10 +20,6 @@ public enum SagaStepEnum {
     COMPLETE_ORDER("complete_order");
 
     private final String value;
-
-    SagaStepEnum(String value) {
-        this.value = value;
-    }
 
     @JsonValue
     public String getValue() {

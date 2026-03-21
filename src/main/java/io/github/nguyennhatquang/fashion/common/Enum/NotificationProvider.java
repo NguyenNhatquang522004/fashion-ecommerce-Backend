@@ -3,10 +3,15 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the third-party provider used to dispatch a notification (Cassandra).
  * JSON wire values: "sendgrid" | "twilio" | "firebase" | "apns"
  */
+@Getter
+@RequiredArgsConstructor
 public enum NotificationProvider {
 
     SENDGRID("sendgrid"),
@@ -16,9 +21,6 @@ public enum NotificationProvider {
 
     private final String value;
 
-    NotificationProvider(String value) {
-        this.value = value;
-    }
 
     @JsonValue
     public String getValue() {

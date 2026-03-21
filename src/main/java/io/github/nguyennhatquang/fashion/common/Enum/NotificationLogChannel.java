@@ -3,10 +3,15 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the delivery channel for a notification log entry (Cassandra).
  * JSON wire values: "email" | "sms" | "push" | "in_app"
  */
+@Getter
+@RequiredArgsConstructor
 public enum NotificationLogChannel {
 
     EMAIL("email"),
@@ -16,9 +21,6 @@ public enum NotificationLogChannel {
 
     private final String value;
 
-    NotificationLogChannel(String value) {
-        this.value = value;
-    }
 
     @JsonValue
     public String getValue() {

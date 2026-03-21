@@ -3,12 +3,17 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the AI language model used for styling recommendations (pre-existing enum).
  * JSON wire values: "gpt-4o" | "gpt-4o-mini" | "gemini-pro" | "claude-3-sonnet"
  *
  * Wire values follow provider API naming conventions.
  */
+@Getter
+@RequiredArgsConstructor
 public enum TypeModelAI {
 
     GPT_4O("gpt-4o"),
@@ -18,9 +23,7 @@ public enum TypeModelAI {
 
     private final String value;
 
-    TypeModelAI(String value) {
-        this.value = value;
-    }
+
 
     @JsonValue
     public String getValue() {

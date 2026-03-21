@@ -3,10 +3,15 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the type of inventory movement recorded in the audit log (Cassandra).
  * JSON wire values: "stock_in" | "stock_out" | "reserve" | "release"
  */
+@Getter
+@RequiredArgsConstructor
 public enum InventoryAuditTransactionType {
 
     STOCK_IN("stock_in"),
@@ -16,9 +21,6 @@ public enum InventoryAuditTransactionType {
 
     private final String value;
 
-    InventoryAuditTransactionType(String value) {
-        this.value = value;
-    }
 
     @JsonValue
     public String getValue() {

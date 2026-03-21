@@ -3,10 +3,15 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the action type recorded in the order audit log (Cassandra).
  * JSON wire values: "create" | "update" | "cancel" | "refund"
  */
+@Getter
+@RequiredArgsConstructor
 public enum OrderAuditActionType {
 
     CREATE("create"),
@@ -16,9 +21,7 @@ public enum OrderAuditActionType {
 
     private final String value;
 
-    OrderAuditActionType(String value) {
-        this.value = value;
-    }
+
 
     @JsonValue
     public String getValue() {

@@ -3,11 +3,16 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the gender of a user profile.
  * PostgreSQL type: gender_enum
  * JSON wire values: "male" | "female" | "other"
  */
+@Getter
+@RequiredArgsConstructor
 public enum GenderEnum {
 
     MALE("male"),
@@ -16,9 +21,6 @@ public enum GenderEnum {
 
     private final String value;
 
-    GenderEnum(String value) {
-        this.value = value;
-    }
 
     @JsonValue
     public String getValue() {

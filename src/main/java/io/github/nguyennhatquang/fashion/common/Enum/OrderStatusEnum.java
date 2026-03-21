@@ -3,6 +3,9 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the lifecycle status of a customer order.
  * PostgreSQL type: order_status_enum
@@ -11,6 +14,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * Lifecycle (happy path): PENDING → RESERVED → PAID → PROCESSING → SHIPPING → COMPLETED
  * Cancellation: any state before SHIPPING → CANCELLED
  */
+@Getter
+@RequiredArgsConstructor
 public enum OrderStatusEnum {
 
     PENDING("pending"),
@@ -23,10 +28,7 @@ public enum OrderStatusEnum {
 
     private final String value;
 
-    OrderStatusEnum(String value) {
-        this.value = value;
-    }
-
+ 
     @JsonValue
     public String getValue() {
         return value;

@@ -3,11 +3,16 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the type of discount applied to a voucher or campaign.
  * PostgreSQL type: discount_type_enum
  * JSON wire values: "percentage" | "fixed_amount"
  */
+@Getter
+@RequiredArgsConstructor
 public enum DiscountTypeEnum {
 
     PERCENTAGE("percentage"),
@@ -15,10 +20,7 @@ public enum DiscountTypeEnum {
 
     private final String value;
 
-    DiscountTypeEnum(String value) {
-        this.value = value;
-    }
-
+ 
     @JsonValue
     public String getValue() {
         return value;

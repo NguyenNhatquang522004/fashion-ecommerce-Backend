@@ -3,11 +3,16 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the lifecycle status of an inventory reservation.
  * PostgreSQL type: reservation_status_enum
  * JSON wire values: "reserved" | "confirmed" | "cancelled" | "expired"
  */
+@Getter
+@RequiredArgsConstructor
 public enum ReservationStatusEnum {
 
     RESERVED("reserved"),
@@ -17,9 +22,6 @@ public enum ReservationStatusEnum {
 
     private final String value;
 
-    ReservationStatusEnum(String value) {
-        this.value = value;
-    }
 
     @JsonValue
     public String getValue() {

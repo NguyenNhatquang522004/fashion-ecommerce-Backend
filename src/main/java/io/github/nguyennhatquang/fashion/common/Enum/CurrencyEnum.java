@@ -3,11 +3,16 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the currency used in payment transactions.
  * PostgreSQL type: currency_enum
  * JSON wire values: "vnd" | "usd"
  */
+@Getter
+@RequiredArgsConstructor
 public enum CurrencyEnum {
 
     VND("vnd"),
@@ -15,9 +20,7 @@ public enum CurrencyEnum {
 
     private final String value;
 
-    CurrencyEnum(String value) {
-        this.value = value;
-    }
+
 
     @JsonValue
     public String getValue() {

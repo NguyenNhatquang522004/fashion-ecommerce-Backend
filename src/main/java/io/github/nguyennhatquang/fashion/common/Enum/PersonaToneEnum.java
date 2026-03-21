@@ -3,11 +3,16 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the conversational tone of the AI stylist persona.
  * PostgreSQL type: persona_tone_enum
  * JSON wire values: "friendly" | "professional" | "luxury"
  */
+@Getter
+@RequiredArgsConstructor
 public enum PersonaToneEnum {
 
     FRIENDLY("friendly"),
@@ -16,9 +21,7 @@ public enum PersonaToneEnum {
 
     private final String value;
 
-    PersonaToneEnum(String value) {
-        this.value = value;
-    }
+
 
     @JsonValue
     public String getValue() {

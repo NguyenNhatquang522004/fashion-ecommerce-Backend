@@ -3,11 +3,16 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the channel through which a notification is delivered.
  * PostgreSQL type: notification_channel_enum
  * JSON wire values: "email" | "sms" | "push" | "in_app"
  */
+@Getter
+@RequiredArgsConstructor
 public enum NotificationChannelEnum {
 
     EMAIL("email"),
@@ -17,9 +22,6 @@ public enum NotificationChannelEnum {
 
     private final String value;
 
-    NotificationChannelEnum(String value) {
-        this.value = value;
-    }
 
     @JsonValue
     public String getValue() {

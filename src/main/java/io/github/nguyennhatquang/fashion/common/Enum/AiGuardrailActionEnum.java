@@ -3,11 +3,16 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the action taken by the AI guardrail system.
  * PostgreSQL type: ai_guardrail_action_enum
  * JSON wire values: "block" | "redirect"
  */
+@Getter
+@RequiredArgsConstructor
 public enum AiGuardrailActionEnum {
 
     BLOCK("block"),
@@ -15,9 +20,7 @@ public enum AiGuardrailActionEnum {
 
     private final String value;
 
-    AiGuardrailActionEnum(String value) {
-        this.value = value;
-    }
+
 
     @JsonValue
     public String getValue() {

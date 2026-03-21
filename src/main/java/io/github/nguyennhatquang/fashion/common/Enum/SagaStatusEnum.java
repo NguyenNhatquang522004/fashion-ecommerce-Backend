@@ -3,11 +3,16 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the overall status of a distributed saga execution.
  * PostgreSQL type: saga_status_enum
  * JSON wire values: "started" | "completed" | "compensating" | "aborted"
  */
+@Getter
+@RequiredArgsConstructor
 public enum SagaStatusEnum {
 
     STARTED("started"),
@@ -17,9 +22,6 @@ public enum SagaStatusEnum {
 
     private final String value;
 
-    SagaStatusEnum(String value) {
-        this.value = value;
-    }
 
     @JsonValue
     public String getValue() {

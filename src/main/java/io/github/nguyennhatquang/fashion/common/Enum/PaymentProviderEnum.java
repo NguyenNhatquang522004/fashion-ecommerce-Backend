@@ -3,11 +3,16 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the payment gateway provider used for a transaction.
  * PostgreSQL type: payment_provider_enum
  * JSON wire values: "vnpay" | "momo" | "stripe" | "cod"
  */
+@Getter
+@RequiredArgsConstructor
 public enum PaymentProviderEnum {
 
     VNPAY("vnpay"),
@@ -16,10 +21,6 @@ public enum PaymentProviderEnum {
     COD("cod");
 
     private final String value;
-
-    PaymentProviderEnum(String value) {
-        this.value = value;
-    }
 
     @JsonValue
     public String getValue() {
