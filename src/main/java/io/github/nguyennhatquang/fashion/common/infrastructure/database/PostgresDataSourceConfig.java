@@ -9,8 +9,12 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import java.util.Properties;
 
 import javax.sql.DataSource;
 
@@ -56,6 +60,53 @@ public class PostgresDataSourceConfig {
         config.addDataSourceProperty("tcpKeepAlive", "true");
 
         return new HikariDataSource(config);
+    }
+
+    @Bean(name = "entityManagerFactory")
+    @Primary
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
+        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
+        em.setDataSource(dataSource);
+
+        // 1. Quét toàn bộ các module trong hệ thống Modular Monolithic
+        em.setPackagesToScan("io.github.nguyennhatquang.fashion");
+
+        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        // Tự động nhận diện Dialect dựa trên DB hiện tại, giảm lỗi config sai version
+        vendorAdapter.setGenerateDdl(false);
+        em.setJpaVendorAdapter(vendorAdapter);
+
+        Properties props = new Properties();
+
+        // 2. SQL & Naming Strategy (Đảm bảo mapping chuẩn Spring Boot)
+        props.setProperty("hibernate.physical_naming_strategy",
+                "org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy");
+        props.setProperty("hibernate.implicit_naming_strategy",
+                "org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy");
+
+        // 3. VŨ KHÍ TỐI THƯỢNG CHO FLASH SALE (Batching nâng cao)
+        props.setProperty("hibernate.jdbc.batch_size", "50");
+        props.setProperty("hibernate.order_inserts", "true");
+        props.setProperty("hibernate.order_updates", "true");
+        props.setProperty("hibernate.jdbc.batch_versioned_data", "true"); // Quan trọng cho Optimistic Locking
+
+        // 4. Tối ưu hóa hiệu năng PostgreSQL
+        props.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
+        props.setProperty("hibernate.jdbc.fetch_size", "100"); // Tránh tràn RAM khi query tập dữ liệu lớn
+
+        // Giảm thiểu overhead khi startup bằng cách bỏ qua quét metadata không cần
+        // thiết
+        props.setProperty("hibernate.temp.use_jdbc_metadata_defaults", "false");
+
+        // 5. Kiểm soát tính nhất quán (Kết hợp với Liquibase)
+        props.setProperty("hibernate.hbm2ddl.auto", "validate");
+
+        // 6. Chống lỗi LazyInitializationException trong một số trường hợp View
+        props.setProperty("hibernate.enable_lazy_load_no_trans", "false"); // Luôn để false để đảm bảo Clean
+                                                                           // Architecture
+
+        em.setJpaProperties(props);
+        return em;
     }
 
     @Bean

@@ -4,7 +4,10 @@ import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.config.EnableCassandraAuditing;
+import org.springframework.data.cassandra.core.CassandraTemplate;
+import org.springframework.data.cassandra.core.convert.CassandraConverter;
 
 import java.time.Duration;
 
@@ -47,5 +50,10 @@ public class CassandraInfrastructureConfig {
 
                 // 5. Cấu hình kích thước max requests trên mỗi connection (chuẩn DataStax v4)
                 .withInt(DefaultDriverOption.CONNECTION_MAX_REQUESTS, 1024);
+    }
+
+    @Bean
+    public CassandraTemplate cassandraTemplate(SessionFactory sessionFactory, CassandraConverter converter) {
+        return new CassandraTemplate(sessionFactory, converter);
     }
 }

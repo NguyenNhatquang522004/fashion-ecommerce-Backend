@@ -1,27 +1,29 @@
 package io.github.nguyennhatquang.fashion.common.infrastructure.database;
 
 import org.springframework.boot.elasticsearch.autoconfigure.ElasticsearchProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.elasticsearch.client.ClientConfiguration;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchConfiguration;
-
+import org.springframework.data.elasticsearch.config.EnableElasticsearchAuditing;
+import org.springframework.data.elasticsearch.core.convert.ElasticsearchCustomConversions;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
+@EnableElasticsearchAuditing(auditorAwareRef = "keycloakAuditorAware") // Đã bổ sung Auditing
+@RequiredArgsConstructor
 public class ElasticsearchConfig extends ElasticsearchConfiguration {
-    private final ElasticsearchProperties elasticsearchProperties;
 
-    // Inject tự động các cấu hình từ application.properties thông qua class chuẩn
-    // của Spring
-    public ElasticsearchConfig(ElasticsearchProperties elasticsearchProperties) {
-        this.elasticsearchProperties = elasticsearchProperties;
-    }
+    private final ElasticsearchProperties elasticsearchProperties;
 
     @Override
     @NonNull
     public ClientConfiguration clientConfiguration() {
-        // 1. Lấy và format lại mảng URIs (loại bỏ http/https vì
-        // ClientConfiguration.builder yêu cầu format host:port)
+        // Tối ưu hóa việc lấy URIs từ properties
         String[] uris = elasticsearchProperties.getUris().stream()
                 .map(uri -> uri.replace("http://", "").replace("https://", ""))
                 .toArray(String[]::new);
@@ -29,8 +31,7 @@ public class ElasticsearchConfig extends ElasticsearchConfiguration {
         ClientConfiguration.MaybeSecureClientConfigurationBuilder builder = ClientConfiguration.builder()
                 .connectedTo(uris);
 
-        // 2. Cấu hình Timeout (Rất quan trọng cho hệ thống Production / High
-        // Concurrency)
+        // Best Practice: Timeout cực kỳ quan trọng để tránh treo thread khi ES quá tải
         if (elasticsearchProperties.getConnectionTimeout() != null) {
             builder.withConnectTimeout(elasticsearchProperties.getConnectionTimeout());
         }
@@ -38,14 +39,25 @@ public class ElasticsearchConfig extends ElasticsearchConfiguration {
             builder.withSocketTimeout(elasticsearchProperties.getSocketTimeout());
         }
 
-        // 3. Cấu hình Authentication
+        // Cấu hình bảo mật
         if (elasticsearchProperties.getUsername() != null && elasticsearchProperties.getPassword() != null) {
             builder.withBasicAuth(elasticsearchProperties.getUsername(), elasticsearchProperties.getPassword());
         }
 
-        // 4. (Tùy chọn tương lai) Cấu hình SSL, Default Headers, Proxy... có thể add
-        // thêm tại đây
-
         return builder.build();
+    }
+
+    /**
+     * Best Practice: Đảm bảo Java 8 Dates (LocalDateTime) được lưu đúng định dạng
+     * ISO-8601.
+     * Giúp Elasticsearch hiểu đây là kiểu dữ liệu DATE để thực hiện
+     * Search/Sort/Filter theo thời gian.
+     */
+    @Bean
+    @Override
+    public @NonNull ElasticsearchCustomConversions elasticsearchCustomConversions() {
+        List<Object> converters = new ArrayList<>();
+        // Bạn có thể thêm các custom converter đặc thù của ngành thời trang tại đây
+        return new ElasticsearchCustomConversions(converters);
     }
 }

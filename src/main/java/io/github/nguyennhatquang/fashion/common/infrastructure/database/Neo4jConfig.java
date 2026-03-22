@@ -6,6 +6,9 @@ import org.neo4j.driver.Driver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.neo4j.config.EnableNeo4jAuditing;
 import org.springframework.data.neo4j.core.DatabaseSelectionProvider;
+import org.springframework.data.neo4j.core.Neo4jClient;
+import org.springframework.data.neo4j.core.Neo4jTemplate;
+import org.springframework.data.neo4j.core.mapping.Neo4jMappingContext;
 import org.springframework.data.neo4j.core.transaction.Neo4jTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
@@ -35,5 +38,15 @@ public class Neo4jConfig {
         return Configuration.newConfig()
                 .withDialect(Dialect.NEO4J_5) // Đổi thành NEO4J_4 nếu bạn dùng bản cũ hơn
                 .build();
+    }
+
+    @Bean
+    public Neo4jClient neo4jClient(Driver driver) {
+        return Neo4jClient.create(driver);
+    }
+
+    @Bean
+    public Neo4jTemplate neo4jTemplate(Neo4jClient neo4jClient, Neo4jMappingContext mappingContext) {
+        return new Neo4jTemplate(neo4jClient, mappingContext);
     }
 }

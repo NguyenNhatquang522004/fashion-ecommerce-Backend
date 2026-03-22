@@ -6,6 +6,8 @@ import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.MongoTransactionManager;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
+import org.springframework.data.mongodb.core.mapping.event.ValidatingMongoEventListener;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import java.util.Collections;
 
@@ -37,5 +39,10 @@ public class MongoConfig {
     public MongoCustomConversions customConversions() {
         // Thêm các converter tùy chỉnh vào Collections.emptyList() khi dự án mở rộng
         return new MongoCustomConversions(Collections.emptyList());
+    }
+
+    @Bean
+    public ValidatingMongoEventListener validatingMongoEventListener(LocalValidatorFactoryBean factory) {
+        return new ValidatingMongoEventListener(factory);
     }
 }
