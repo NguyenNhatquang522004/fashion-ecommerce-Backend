@@ -4,7 +4,7 @@ import java.util.Optional;
 
 import org.keycloak.representations.idm.UserRepresentation;
 
-
+import io.github.nguyennhatquang.fashion.common.infrastructure.auth.AuthResponse;
 
 public interface IKeycloak {
     // Record DTO nội bộ để truyền dữ liệu
@@ -55,4 +55,10 @@ public interface IKeycloak {
     void deleteRole(String roleName);
 
     void deleteUserByEmail(String email);
+
+    AuthResponse loginWithPassword(String email, String password);
+
+    AuthResponse exchangeSocialToken(String providerAlias, String providerToken);
+
+    void logout(String refreshToken);
 }

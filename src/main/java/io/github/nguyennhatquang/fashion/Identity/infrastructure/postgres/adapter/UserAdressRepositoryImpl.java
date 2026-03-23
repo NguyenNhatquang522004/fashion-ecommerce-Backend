@@ -18,13 +18,11 @@ public class UserAdressRepositoryImpl implements IRepositoryUserAddress {
     private final UserAddressJpaRepo userAddressJpaRepo;
 
     @Override
-    @Transactional
     public UserAddress save(UserAddress userAddress) {
         return userAddressJpaRepo.save(userAddress);
     }
 
     @Override
-    @Transactional
     public List<UserAddress> saveAll(List<UserAddress> userAddresses) {
         return userAddressJpaRepo.saveAll(userAddresses);
     }
@@ -36,20 +34,17 @@ public class UserAdressRepositoryImpl implements IRepositoryUserAddress {
     }
 
     @Override
-    @Transactional
     public List<UserAddress> updateAll(List<UserAddress> userAddresses) {
         return userAddressJpaRepo.saveAll(userAddresses);
     }
 
     @Override
-    @Transactional
     public boolean delete(UserAddress userAddress) {
         userAddressJpaRepo.delete(userAddress);
         return true;
     }
 
     @Override
-    @Transactional
     public boolean deleteAll(List<UserAddress> userAddresses) {
         userAddressJpaRepo.deleteAll(userAddresses);
         return true;

@@ -19,12 +19,19 @@ import java.util.List;
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true) // Cho phép dùng @PreAuthorize("hasRole('ADMIN')") ở các module khác
 public class SecurityConfig {
+    private final KeycloakJwtAuthenticationConverter jwtConverter;
+
+    public SecurityConfig(KeycloakJwtAuthenticationConverter jwtConverter) {
+        this.jwtConverter = jwtConverter;
+    }
 
     private static final String[] PUBLIC_ENDPOINTS = {
             "/api/v1/public/**",
             "/swagger-ui/**",
             "/v3/api-docs/**",
-            "/actuator/health"
+            "/actuator/health",
+            "/api/v1/auth/register/**",
+            "/api/v1/auth/login"
     };
 
     @Bean
@@ -46,7 +53,7 @@ public class SecurityConfig {
 
                 // 5. Cấu hình OAuth2 Resource Server tích hợp custom converter
                 .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt.jwtAuthenticationConverter(new KeycloakJwtAuthenticationConverter())));
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtConverter)));
 
         return http.build();
     }

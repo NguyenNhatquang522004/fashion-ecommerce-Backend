@@ -2,16 +2,22 @@ package io.github.nguyennhatquang.fashion.Identity.usecase;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.github.nguyennhatquang.fashion.Identity.delivery.dto.register.RegisterRequest;
 import io.github.nguyennhatquang.fashion.Identity.domain.IRepository.postgres.IRepositoryUserProfile;
 import io.github.nguyennhatquang.fashion.Identity.domain.entity.UserProfile;
+import io.github.nguyennhatquang.fashion.common.Enum.LoyaltyTierEnum;
+import io.github.nguyennhatquang.fashion.common.Enum.ProfileStatusEnum;
 import io.github.nguyennhatquang.fashion.common.Enum.TypeLoginEnum;
 import io.github.nguyennhatquang.fashion.common.mail.EmailMessage;
 import io.github.nguyennhatquang.fashion.common.response.Result;
@@ -27,6 +33,7 @@ public class RegisterUseCase implements IRegisterUseCase {
     private final IEmail emailService;
 
     @Override
+    @Transactional
     public Result<UserProfile, Exception> RegisterStepOne(RegisterRequest.RegisterStepOne request) {
         // TODO Auto-generated method stub
         UserRepresentation keycloakUser = new UserRepresentation();
@@ -45,20 +52,21 @@ public class RegisterUseCase implements IRegisterUseCase {
                 .typeLogin(TypeLoginEnum.Local)
                 .keycloakId(resutltkeycloak.getId())
                 .build();
-        userProfileRepo.save(user);
-        if (user == null) {
+        UserProfile userProfilesave = userProfileRepo.save(user);
+        if (userProfilesave == null) {
             return Result.error(new Exception("Failed to create user"));
         }
-        String html = htmlOTp(user.getEmail(), user.getOtp(), 10);
-        EmailMessage message = EmailMessage.ofHtml(html, user.getEmail(), "Verify OTP");
+        String html = htmlOTp(userProfilesave.getEmail(), userProfilesave.getOtp(), 10);
+        EmailMessage message = EmailMessage.ofHtml(html, userProfilesave.getEmail(), "Verify OTP");
         emailService.send(message);
         return Result.success(user);
 
     }
 
     @Override
+    @Transactional
     public Result<UserProfile, Exception> RegisterStepTwo(RegisterRequest.RegisterStepTwo request) {
-        // TODO Auto-generated method stub
+
         UserProfile user = userProfileRepo.findbyEmail(request.email());
         if (user == null) {
             return Result.error(new Exception("User not found"));
@@ -72,17 +80,24 @@ public class RegisterUseCase implements IRegisterUseCase {
         }
         user.setOtp(null);
         user.setOtpExpiresAt(null);
-        userProfileRepo.save(user);
-        Optional<UserRepresentation> userkeycloak = keycloakRepo.findByKeyEmail(request.email());
-        if (userkeycloak.isPresent()) {
-            userkeycloak.get().setEmailVerified(true);
-            keycloakRepo.updatedOrSaveUser(userkeycloak.get());
+        UserProfile userProfilesave = userProfileRepo.save(user);
+        if (userProfilesave == null) {
+            return Result.error(new Exception("Failed to update user"));
         }
-
+        Optional<UserRepresentation> userkeycloak = keycloakRepo.findByKeyEmail(request.email());
+        if (userkeycloak.isEmpty()) {
+            return Result.error(new Exception("Failed to update user"));
+        }
+        userkeycloak.get().setEmailVerified(true);
+        UserRepresentation userkeycloakv2 = keycloakRepo.updatedOrSaveUser(userkeycloak.get());
+        if (userkeycloakv2 == null) {
+            return Result.error(new Exception("Failed to update user"));
+        }
         return Result.success(user);
     }
 
     @Override
+    @Transactional
     public Result<UserProfile, Exception> RegisterStepThree(RegisterRequest.RegisterStepThree request) {
         // TODO Auto-generated method stub
         UserProfile user = userProfileRepo.findbyEmail(request.email());
@@ -90,14 +105,18 @@ public class RegisterUseCase implements IRegisterUseCase {
             return Result.error(new Exception("User not found"));
         }
         user.setFullName(request.username());
-        userProfileRepo.save(user);
-        Optional<UserRepresentation> userkeycloak = keycloakRepo.findByKeyEmail(request.email());
-        if (userkeycloak.isPresent()) {
-            userkeycloak.get().setUsername(request.username());
-
-            keycloakRepo.updatedOrSaveUser(userkeycloak.get());
+        UserProfile userProfilesave = userProfileRepo.save(user);
+        if (userProfilesave == null) {
+            return Result.error(new Exception("Failed to update user"));
         }
+        Optional<UserRepresentation> userkeycloak = keycloakRepo.findByKeyEmail(request.email());
+        if (userkeycloak.isEmpty()) {
+            return Result.error(new Exception("Failed to update user"));
+        }
+        userkeycloak.get().setUsername(request.username());
 
+        keycloakRepo.updatedOrSaveUser(userkeycloak.get());
+        userkeycloak.get().setFirstName(request.username());
         CredentialRepresentation resetPassword = new CredentialRepresentation();
         resetPassword.setType(CredentialRepresentation.PASSWORD);
         resetPassword.setValue(request.password());
@@ -111,9 +130,37 @@ public class RegisterUseCase implements IRegisterUseCase {
     }
 
     @Override
+    @Transactional
     public Result<UserProfile, Exception> RegisterStepFour(RegisterRequest.RegisterStepFour request) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'RegisterStepFour'");
+        UserProfile user = userProfileRepo.findbyEmail(request.email());
+        if (user == null) {
+            return Result.error(new Exception("User not found"));
+        }
+        user.setPhoneNumber(request.phoneNumber());
+        user.setGender(request.gender());
+        user.setLoyaltyTier(LoyaltyTierEnum.BRONZE);
+        user.setStatus(ProfileStatusEnum.ACTIVE);
+        UserProfile usersave = userProfileRepo.save(user);
+        if (usersave == null) {
+            return Result.error(new Exception("Failed to update user"));
+        }
+        Optional<UserRepresentation> userkeycloak = keycloakRepo.findByKeyEmail(request.email());
+        if (userkeycloak.isEmpty()) {
+            return Result.error(new Exception("Failed to update user"));
+        }
+        Map<String, List<String>> attributes = userkeycloak.get().getAttributes();
+        if (attributes == null) {
+            attributes = new HashMap<>();
+        }
+        attributes.put("phoneNumber", Collections.singletonList(request.phoneNumber()));
+        attributes.put("gender", Collections.singletonList(request.gender().name()));
+        userkeycloak.get().setAttributes(attributes);
+        UserRepresentation userkeycloakv2 = keycloakRepo.updatedOrSaveUser(userkeycloak.get());
+        if (userkeycloakv2 == null) {
+            return Result.error(new Exception("Failed to update user"));
+        }
+        return Result.success(usersave);
     }
 
     public String htmlOTp(String name, String otpCode, int expirationMinutes) {

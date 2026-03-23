@@ -6,9 +6,11 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
+@Component("keycloakAuditorAware") // BẮT BUỘC: Đánh dấu đây là Bean có tên trùng với auditorAwareRef
 public class KeycloakAuditorAware implements AuditorAware<String> {
 
     @Override
@@ -19,11 +21,10 @@ public class KeycloakAuditorAware implements AuditorAware<String> {
                 .filter(auth -> auth instanceof JwtAuthenticationToken)
                 .map(auth -> {
                     Jwt jwt = ((JwtAuthenticationToken) auth).getToken();
-                    // Lấy username từ Keycloak, nếu không có thì fallback về Subject ID
                     String auditor = jwt.getClaimAsString("preferred_username");
-                    return (auditor != null) ? auditor : jwt.getSubject();
+                    // An toàn hơn: Kiểm tra chuỗi rỗng trước khi trả về
+                    return (auditor != null && !auditor.trim().isEmpty()) ? auditor : jwt.getSubject();
                 })
-                .or(() -> Optional.of("SYSTEM")); // Mặc định là SYSTEM nếu không có user (VD: Job chạy ngầm)
+                .or(() -> Optional.of("SYSTEM")); 
     }
-
 }

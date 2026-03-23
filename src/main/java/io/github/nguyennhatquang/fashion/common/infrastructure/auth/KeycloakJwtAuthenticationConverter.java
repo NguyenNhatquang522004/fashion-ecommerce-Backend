@@ -7,6 +7,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.Map;
@@ -14,23 +15,26 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Component // BEST PRACTICE: Đăng ký thành Bean để Dependency Injection tự lo
 public class KeycloakJwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
     private final JwtGrantedAuthoritiesConverter defaultGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
 
     @Override
     public AbstractAuthenticationToken convert(Jwt jwt) {
-        // Lấy các quyền mặc định (scopes)
         Collection<GrantedAuthority> authorities = defaultGrantedAuthoritiesConverter.convert(jwt);
 
-        // Gộp với Roles từ Keycloak
+        // Đảm bảo không bị lỗi NullPointerException
         Set<GrantedAuthority> keycloakAuthorities = Stream.concat(
-                authorities.stream(),
+                (authorities == null ? Stream.empty() : authorities.stream()),
                 extractKeycloakRoles(jwt).stream()).collect(Collectors.toSet());
 
-        // Trả về Authentication Token với name là "preferred_username" thay vì UUID của
-        // sub
         String principalClaimName = jwt.getClaimAsString("preferred_username");
+        // Fallback về ID nếu Keycloak không trả về preferred_username
+        if (principalClaimName == null || principalClaimName.trim().isEmpty()) {
+            principalClaimName = jwt.getSubject();
+        }
+
         return new JwtAuthenticationToken(jwt, keycloakAuthorities, principalClaimName);
     }
 
@@ -46,7 +50,6 @@ public class KeycloakJwtAuthenticationConverter implements Converter<Jwt, Abstra
             return Set.of();
         }
 
-        // Map roles thành chuẩn ROLE_xxx của Spring Security
         return roles.stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()))
                 .collect(Collectors.toSet());

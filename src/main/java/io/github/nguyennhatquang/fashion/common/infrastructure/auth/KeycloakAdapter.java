@@ -1,10 +1,27 @@
 package io.github.nguyennhatquang.fashion.common.infrastructure.auth;
 
+// --- 1. Java Standard Imports ---
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+// --- 2. JAX-RS (Dùng cho Response của Keycloak Admin) ---
+import jakarta.ws.rs.core.Response;
+
+// --- 3. Spring Framework Imports (CHUẨN XÁC) ---
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders; // Sửa lại thành của Spring
+import org.springframework.http.MediaType; // Thêm mới
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap; // Sửa lại thành của Spring
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+
+// --- 4. Keycloak Admin Client Imports ---
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UserResource;
@@ -12,12 +29,13 @@ import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
+// --- 5. Project Internal Imports (Thay đổi đường dẫn AuthResponse nếu cần) ---
 import io.github.nguyennhatquang.fashion.common.Enum.RoleTypeEnum;
 import io.github.nguyennhatquang.fashion.common.shared.IKeycloak;
-import jakarta.ws.rs.core.Response;
+// CHÚ Ý: Đảm bảo bạn đã import record AuthResponse (Tùy thuộc vào nơi bạn lưu class này)
+
+// --- 6. Lombok ---
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,6 +44,17 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class KeycloakAdapter implements IKeycloak {
     private final Keycloak keycloak;
+    @Value("${keycloak.auth-server-url}") // URL server Keycloak của bạn
+    private String authServerUrl;
+
+    @Value("${keycloak.client-id}") // Tên client bạn tạo trong Keycloak (VD: fashion-app)
+    private String clientId;
+
+    @Value("${keycloak.client-secret}") // Nếu Client Access Type là Confidential
+    private String clientSecret;
+
+    // Inject RestTemplate (Bạn nhớ tạo Bean RestTemplate ở class Config nhé)
+    private final RestTemplate restTemplate;
 
     @Value("${keycloak.admin.realm}")
     private String realm;
@@ -299,5 +328,97 @@ public class KeycloakAdapter implements IKeycloak {
             return Optional.of(users.get(0));
         }
         return Optional.empty();
+    }
+
+    @Override
+    public AuthResponse loginWithPassword(String email, String password) {
+        String tokenUrl = authServerUrl + "/realms/" + realm + "/protocol/openid-connect/token";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("grant_type", "password");
+        body.add("client_id", clientId);
+        body.add("client_secret", clientSecret);
+        body.add("username", email);
+        body.add("password", password);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
+
+        try {
+            ResponseEntity<AuthResponse> response = restTemplate.postForEntity(tokenUrl, request, AuthResponse.class);
+            log.info("Local login successful for user: {}", email);
+            return response.getBody();
+        } catch (HttpClientErrorException e) {
+            log.error("Local login failed for user {}. Response: {}", email, e.getResponseBodyAsString());
+            // Trả về lỗi thân thiện cho Frontend
+            throw new RuntimeException("Tài khoản hoặc mật khẩu không chính xác");
+        } catch (Exception e) {
+            log.error("Error connecting to Keycloak", e);
+            throw new RuntimeException("Hệ thống đăng nhập đang bảo trì");
+        }
+    }
+
+    @Override
+    public AuthResponse exchangeSocialToken(String providerAlias, String providerToken) {
+        String tokenUrl = authServerUrl + "/realms/" + realm + "/protocol/openid-connect/token";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        // Định nghĩa đây là luồng Đổi Token
+        body.add("grant_type", "urn:ietf:params:oauth:grant-type:token-exchange");
+        body.add("client_id", clientId);
+        body.add("client_secret", clientSecret);
+
+        // Token mà Mobile lấy được từ Google/Facebook
+        body.add("subject_token", providerToken);
+        body.add("subject_token_type", "urn:ietf:params:oauth:token-type:access_token");
+
+        // Nguồn cung cấp: "google" hoặc "facebook" (Phải cấu hình đúng Alias trong
+        // Keycloak)
+        body.add("subject_issuer", providerAlias);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity(body, headers);
+
+        try {
+            ResponseEntity<AuthResponse> response = restTemplate.postForEntity(tokenUrl, request, AuthResponse.class);
+            log.info("Social login exchange successful for provider: {}", providerAlias);
+            return response.getBody();
+        } catch (HttpClientErrorException e) {
+            log.error("Token exchange failed for provider {}. Response: {}", providerAlias,
+                    e.getResponseBodyAsString());
+            throw new RuntimeException("Xác thực qua " + providerAlias + " thất bại hoặc Token đã hết hạn.");
+        }
+    }
+    @Override
+    public void logout(String refreshToken) {
+        String logoutUrl = authServerUrl + "/realms/" + realm + "/protocol/openid-connect/logout";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("client_id", clientId);
+        body.add("client_secret", clientSecret);
+        // Bắt buộc phải có Refresh Token để Keycloak biết cần hủy Session nào
+        body.add("refresh_token", refreshToken); 
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
+
+        try {
+            // API logout của Keycloak trả về 204 No Content nếu thành công
+            restTemplate.postForEntity(logoutUrl, request, String.class);
+            log.info("Successfully logged out session from Keycloak");
+        } catch (HttpClientErrorException e) {
+            log.error("Failed to logout from Keycloak. Response: {}", e.getResponseBodyAsString());
+            // Trả về lỗi nếu token đã hết hạn hoặc không hợp lệ
+            throw new RuntimeException("Đăng xuất thất bại hoặc phiên đăng nhập đã kết thúc trước đó.");
+        } catch (Exception e) {
+            log.error("System error connecting to Keycloak during logout", e);
+            throw new RuntimeException("Hệ thống đang bảo trì, không thể xử lý đăng xuất.");
+        }
     }
 }
