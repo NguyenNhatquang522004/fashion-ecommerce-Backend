@@ -11,4 +11,5 @@ import io.github.nguyennhatquang.fashion.Identity.domain.entity.UserAddress;
 @Repository
 public interface UserAddressJpaRepo extends JpaRepository<UserAddress, UUID> {
     List<UserAddress> findByUserProfile_Id(UUID userId);
+
 }

@@ -91,6 +91,5 @@ public class UserAddress {
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 
-    // --- Enums ---
 
 }

@@ -2,6 +2,10 @@ package io.github.nguyennhatquang.fashion.common.shared;
 
 import java.util.Optional;
 
+import org.keycloak.representations.idm.UserRepresentation;
+
+
+
 public interface IKeycloak {
     // Record DTO nội bộ để truyền dữ liệu
     record UserRegistrationCmd(String username, String email, String firstName, String lastName, String password) {
@@ -9,7 +13,10 @@ public interface IKeycloak {
 
     record UserRepresentationDto(String id, String username, String email) {
     }
-    record UserCreatedResult(String keycloakId, String username, String email) {}
+
+    record UserCreatedResult(String keycloakId, String username, String email) {
+    }
+
     /**
      * Tạo user mới và trả về User ID (UUID) được Identity Provider sinh ra.
      */
@@ -19,6 +26,10 @@ public interface IKeycloak {
      * Tìm kiếm user theo Username
      */
     Optional<UserRepresentationDto> findByUsername(String username);
+
+    Optional<UserRepresentation> findByKeyEmail(String email);
+
+    UserRepresentation updatedOrSaveUser(UserRepresentation user);
 
     /**
      * Gán Role cho một User
@@ -34,9 +45,14 @@ public interface IKeycloak {
      * Cập nhật mật khẩu
      */
     void resetPassword(String userId, String newPassword);
+
     void getAllRoles();
+
     void updateRole(String roleId, String newRoleName);
+
     void addRole(String roleName);
+
     void deleteRole(String roleName);
 
+    void deleteUserByEmail(String email);
 }

@@ -13,6 +13,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import io.github.nguyennhatquang.fashion.common.Enum.GenderEnum;
 import io.github.nguyennhatquang.fashion.common.Enum.LoyaltyTierEnum;
 import io.github.nguyennhatquang.fashion.common.Enum.ProfileStatusEnum;
+import io.github.nguyennhatquang.fashion.common.Enum.TypeLoginEnum;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -42,6 +43,15 @@ public class UserProfile {
 
     @Column(name = "keycloak_id", nullable = false, unique = true, updatable = false)
     private String keycloakId;
+
+    @Column(name = "otp", nullable = false, unique = true)
+    private String otp;
+
+    @Column(name = "otp_expires_at", nullable = false)
+    private LocalDateTime otpExpiresAt;
+
+    @Column(name = "type_login", nullable = false)
+    private TypeLoginEnum typeLogin;
 
     @Column(unique = true)
     private String email;
@@ -94,8 +104,6 @@ public class UserProfile {
     @Builder.Default // Đảm bảo khi dùng Builder, giá trị mặc định là false
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
-
-
 
     // Tự định nghĩa equals và hashCode dựa trên Business Key (id hoặc keycloakId)
     // để tránh lỗi với @Data

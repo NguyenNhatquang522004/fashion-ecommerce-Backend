@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.github.nguyennhatquang.fashion.Identity.domain.IRepository.postgres.IRepositoryUserProfile;
 import io.github.nguyennhatquang.fashion.Identity.domain.entity.UserProfile;
@@ -16,31 +17,37 @@ public class UserProfileRepositoryImpl implements IRepositoryUserProfile {
     private final UserProfileJpaRepo userProfileJpaRepo;
 
     @Override
+    @Transactional
     public UserProfile save(UserProfile userProfile) {
         return userProfileJpaRepo.save(userProfile);
     }
 
     @Override
+    @Transactional
     public List<UserProfile> saveAll(List<UserProfile> userProfiles) {
         return userProfileJpaRepo.saveAll(userProfiles);
     }
 
     @Override
+    @Transactional
     public UserProfile update(UserProfile userProfile) {
         return userProfileJpaRepo.save(userProfile);
     }
 
     @Override
+    @Transactional
     public List<UserProfile> updateAll(List<UserProfile> userProfiles) {
         return userProfileJpaRepo.saveAll(userProfiles);
     }
 
     @Override
+    @Transactional
     public void delete(UserProfile userProfile) {
         userProfileJpaRepo.delete(userProfile);
     }
 
     @Override
+    @Transactional
     public void deleteAll(List<UserProfile> userProfiles) {
         userProfileJpaRepo.deleteAll(userProfiles);
     }
@@ -58,5 +65,19 @@ public class UserProfileRepositoryImpl implements IRepositoryUserProfile {
     @Override
     public UserProfile findbykeycloakId(String keycloakId) {
         return userProfileJpaRepo.findByKeycloakId(keycloakId).orElse(null);
+    }
+
+    @Override
+    public UserProfile findbyEmail(String email) {
+        return userProfileJpaRepo.findByEmail(email).orElse(null);
+    }
+
+    @Override
+    @Transactional
+    public void deleteByEmail(String email) {
+        UserProfile userProfile = userProfileJpaRepo.findByEmail(email).orElse(null);
+        if (userProfile != null) {
+            userProfileJpaRepo.delete(userProfile);
+        }
     }
 }

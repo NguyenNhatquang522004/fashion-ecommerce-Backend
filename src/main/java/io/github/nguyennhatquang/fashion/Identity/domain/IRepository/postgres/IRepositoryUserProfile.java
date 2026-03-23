@@ -27,4 +27,8 @@ public interface IRepositoryUserProfile {
 
     UserProfile findbykeycloakId(String keycloakId);
 
+    UserProfile findbyEmail(String email);
+
+    void deleteByEmail(String email);
+
 }

@@ -15,6 +15,7 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import io.github.nguyennhatquang.fashion.common.Enum.RoleTypeEnum;
 import io.github.nguyennhatquang.fashion.common.shared.IKeycloak;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
@@ -81,7 +82,7 @@ public class KeycloakAdapter implements IKeycloak {
         }
     }
 
-    private IKeycloak.UserRepresentationDto toDto(org.keycloak.representations.idm.UserRepresentation kcUser) {
+    private IKeycloak.UserRepresentationDto toDto(UserRepresentation kcUser) {
         if (kcUser == null)
             return null;
         return new IKeycloak.UserRepresentationDto(
@@ -92,7 +93,7 @@ public class KeycloakAdapter implements IKeycloak {
 
     @Override
     public Optional<IKeycloak.UserRepresentationDto> findByUsername(String username) {
-        List<org.keycloak.representations.idm.UserRepresentation> users = getUsersResource().searchByUsername(username,
+        List<UserRepresentation> users = getUsersResource().searchByUsername(username,
                 true);
         if (users.isEmpty()) {
             return Optional.empty();
@@ -101,7 +102,7 @@ public class KeycloakAdapter implements IKeycloak {
     }
 
     public List<IKeycloak.UserRepresentationDto> searchUsers(String keyword) {
-        List<org.keycloak.representations.idm.UserRepresentation> kcUsers = getUsersResource().search(keyword);
+        List<UserRepresentation> kcUsers = getUsersResource().search(keyword);
 
         // Map từng phần tử của Keycloak sang DTO nội bộ của bạn
         return kcUsers.stream()
@@ -183,5 +184,120 @@ public class KeycloakAdapter implements IKeycloak {
     @Override
     public void deleteRole(String roleName) {
         getRealmResource().roles().get(roleName).remove();
+    }
+
+    @Override
+    public UserRepresentation updatedOrSaveUser(UserRepresentation user) {
+        if (user == null) {
+            throw new IllegalArgumentException("UserRepresentation cannot be null");
+        }
+
+        String username = user.getUsername();
+        if (username == null || username.trim().isEmpty()) {
+            throw new IllegalArgumentException("Username is required to update or save a user");
+        }
+
+        UsersResource usersResource = getUsersResource();
+        String userId = user.getId();
+
+        // 1. Kiểm tra user đã tồn tại chưa nếu chưa có ID
+        if (userId == null) {
+            // Tìm kiếm chính xác (exact match = true) theo username
+            List<UserRepresentation> existingUsers = usersResource.searchByUsername(username, true);
+            if (existingUsers != null && !existingUsers.isEmpty()) {
+                // Lấy ID của user đang tồn tại trên hệ thống
+                userId = existingUsers.get(0).getId();
+                user.setId(userId); // Gắn ngược ID vào object để chuẩn bị cho bước update
+            }
+        }
+
+        // 2. Thực hiện Update hoặc Create
+        if (userId != null) {
+            // --- LUỒNG UPDATE (Đã tồn tại) ---
+            try {
+                UserResource userResource = usersResource.get(userId);
+                // Gọi hàm update (hàm này trả về void, không trả về Response)
+                userResource.update(user);
+                log.info("Successfully updated user in Keycloak with ID: {}", userId);
+                if (user.getCredentials() != null && !user.getCredentials().isEmpty()) {
+                    for (CredentialRepresentation cred : user.getCredentials()) {
+                        if (CredentialRepresentation.PASSWORD.equals(cred.getType())) {
+                            // Bắt buộc gọi resetPassword thì Keycloak mới chịu thay đổi mật khẩu
+                            userResource.resetPassword(cred);
+                            log.info("Successfully updated password for user: {}", username);
+                        }
+                    }
+                }
+                // Best Practice: Trả về state mới nhất trực tiếp từ Keycloak
+                return userResource.toRepresentation();
+            } catch (jakarta.ws.rs.NotFoundException e) {
+                log.error("User with ID {} not found in Keycloak for update", userId);
+                throw new RuntimeException("User not found for update in identity provider", e);
+            } catch (Exception e) {
+                log.error("Error updating user {} in Keycloak", username, e);
+                throw new RuntimeException("Failed to update user in identity provider", e);
+            }
+        } else {
+            // --- LUỒNG CREATE (Lưu mới) ---
+            // Best Practice: Dùng try-with-resources để tự động đóng Response, tránh leak
+            // connection
+            try (Response response = usersResource.create(user)) {
+                if (response.getStatus() == 201) {
+                    // 1. Trích xuất ID vừa được Keycloak sinh ra từ Header Location
+                    String path = response.getLocation().getPath();
+                    String generatedId = path.substring(path.lastIndexOf('/') + 1);
+
+                    user.setId(generatedId); // Cập nhật ID vào object hiện tại
+                    log.info("Successfully created user in Keycloak with ID: {}", generatedId);
+
+                    // 2. Gán Role mặc định (Tận dụng hàm assignRole đã viết sẵn)
+                    // LƯU Ý: Tên role "User" phải khớp chính xác 100% (cả chữ hoa/chữ thường) với
+                    // cấu hình trong Keycloak
+                    try {
+                        assignRole(generatedId, RoleTypeEnum.ROLE_USER.getValue());
+                        log.info("Successfully assigned default role '{}' to user ID: {}",
+                                RoleTypeEnum.ROLE_USER.getValue(), generatedId);
+                    } catch (Exception e) {
+                        log.error("User created but failed to assign default role '{}' for user ID: {}",
+                                RoleTypeEnum.ROLE_USER.getValue(),
+                                generatedId, e);
+                        // Best Practice: Nên throw Exception để Rollback transaction hoặc báo lỗi cho
+                        // Client biết
+                        // rằng user đã được tạo nhưng chưa có quyền, tránh việc user đăng nhập được
+                        // nhưng không gọi API được.
+                        throw new RuntimeException("User created successfully but failed to assign default role", e);
+                    }
+
+                    return user;
+                } else if (response.getStatus() == 409) {
+                    // Dù đã check ở trên nhưng trong môi trường multi-thread/concurrent vẫn có thể
+                    // xảy ra Conflict
+                    log.error("Conflict: User with username {} already exists", username);
+                    throw new RuntimeException("User with username or email already exists");
+                } else {
+                    log.error("Failed to create user in Keycloak. Status: {}, Reason: {}",
+                            response.getStatus(), response.getStatusInfo().getReasonPhrase());
+                    throw new RuntimeException("Failed to create user in identity provider");
+                }
+            }
+        }
+    }
+
+    @Override
+    public void deleteUserByEmail(String email) {
+        List<UserRepresentation> users = getUsersResource().searchByUsername(email, true);
+        if (users != null && !users.isEmpty()) {
+            String userId = users.get(0).getId();
+            deleteUser(userId);
+        }
+    }
+
+    @Override
+    public Optional<UserRepresentation> findByKeyEmail(String email) {
+        List<UserRepresentation> users = getUsersResource().searchByUsername(email, true);
+        if (users != null && !users.isEmpty()) {
+            return Optional.of(users.get(0));
+        }
+        return Optional.empty();
     }
 }

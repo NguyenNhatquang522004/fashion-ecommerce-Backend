@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.github.nguyennhatquang.fashion.Identity.domain.IRepository.postgres.IRepositoryUserAddress;
 import io.github.nguyennhatquang.fashion.Identity.domain.entity.UserAddress;
@@ -17,32 +18,38 @@ public class UserAdressRepositoryImpl implements IRepositoryUserAddress {
     private final UserAddressJpaRepo userAddressJpaRepo;
 
     @Override
+    @Transactional
     public UserAddress save(UserAddress userAddress) {
         return userAddressJpaRepo.save(userAddress);
     }
 
     @Override
+    @Transactional
     public List<UserAddress> saveAll(List<UserAddress> userAddresses) {
         return userAddressJpaRepo.saveAll(userAddresses);
     }
 
     @Override
+    @Transactional
     public UserAddress update(UserAddress userAddress) {
         return userAddressJpaRepo.save(userAddress);
     }
 
     @Override
+    @Transactional
     public List<UserAddress> updateAll(List<UserAddress> userAddresses) {
         return userAddressJpaRepo.saveAll(userAddresses);
     }
 
     @Override
+    @Transactional
     public boolean delete(UserAddress userAddress) {
         userAddressJpaRepo.delete(userAddress);
         return true;
     }
 
     @Override
+    @Transactional
     public boolean deleteAll(List<UserAddress> userAddresses) {
         userAddressJpaRepo.deleteAll(userAddresses);
         return true;
