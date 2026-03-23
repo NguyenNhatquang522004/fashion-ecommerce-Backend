@@ -1,4 +1,4 @@
-package io.github.nguyennhatquang.fashion.common.infrastructure.database;
+package io.github.nguyennhatquang.fashion.common.infrastructure.seaweedfs;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

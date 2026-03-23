@@ -6,13 +6,8 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class ForgetPasswordRequest {
-    public record ForgetPasswordRequestOne(
-            @NotBlank(message = "Email is required") @Email(message = "Email is invalid") String email) {
-    }
-
-    public record ForgetPasswordRequestTwo(
-            @NotBlank(message = "Email is required") @Email(message = "Email is invalid") String email,
-            @NotBlank(message = "Password is required") String code) {
-    }
+        public record ForgetPasswordRequestOne(
+                        @NotBlank(message = "Email is required") @Email(message = "Email is invalid") String email) {
+        }
 
 }

@@ -1,4 +1,4 @@
-package io.github.nguyennhatquang.fashion.Identity.usecase;
+package io.github.nguyennhatquang.fashion.Identity.usecase.UseCase;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import io.github.nguyennhatquang.fashion.Identity.delivery.dto.register.RegisterRequest;
 import io.github.nguyennhatquang.fashion.Identity.domain.IRepository.postgres.IRepositoryUserProfile;
 import io.github.nguyennhatquang.fashion.Identity.domain.entity.UserProfile;
+import io.github.nguyennhatquang.fashion.Identity.usecase.IUseCase.IRegisterUseCase;
 import io.github.nguyennhatquang.fashion.common.Enum.LoyaltyTierEnum;
 import io.github.nguyennhatquang.fashion.common.Enum.ProfileStatusEnum;
 import io.github.nguyennhatquang.fashion.common.Enum.TypeLoginEnum;

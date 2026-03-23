@@ -393,6 +393,7 @@ public class KeycloakAdapter implements IKeycloak {
             throw new RuntimeException("Xác thực qua " + providerAlias + " thất bại hoặc Token đã hết hạn.");
         }
     }
+
     @Override
     public void logout(String refreshToken) {
         String logoutUrl = authServerUrl + "/realms/" + realm + "/protocol/openid-connect/logout";
@@ -404,7 +405,7 @@ public class KeycloakAdapter implements IKeycloak {
         body.add("client_id", clientId);
         body.add("client_secret", clientSecret);
         // Bắt buộc phải có Refresh Token để Keycloak biết cần hủy Session nào
-        body.add("refresh_token", refreshToken); 
+        body.add("refresh_token", refreshToken);
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 
@@ -419,6 +420,53 @@ public class KeycloakAdapter implements IKeycloak {
         } catch (Exception e) {
             log.error("System error connecting to Keycloak during logout", e);
             throw new RuntimeException("Hệ thống đang bảo trì, không thể xử lý đăng xuất.");
+        }
+    }
+
+    @Override
+    public void sendResetPasswordEmail(String userId) {
+        try {
+            UserResource userResource = getUsersResource().get(userId);
+
+            // UPDATE_PASSWORD: Hành động bắt buộc user phải đổi pass khi click link
+            List<String> actions = List.of("UPDATE_PASSWORD");
+
+            // Gửi email với các tham số:
+            // - actions: danh sách hành động (Update Password)
+            // - redirectUri: sau khi đổi xong thì quay về đâu (trang Login của bạn)
+            // - lifespan: Link có hiệu lực trong bao lâu (giây)
+            userResource.executeActionsEmail(actions);
+
+            log.info("Successfully sent reset password email to user ID: {}", userId);
+        } catch (Exception e) {
+            log.error("Failed to send reset password email", e);
+            throw new RuntimeException("Không thể gửi email khôi phục mật khẩu lúc này.");
+        }
+    }
+
+    @Override
+    public AuthResponse refreshAccessToken(String refreshToken) {
+        String tokenUrl = authServerUrl + "/realms/" + realm + "/protocol/openid-connect/token";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("grant_type", "refresh_token");
+        body.add("client_id", clientId);
+        body.add("client_secret", clientSecret);
+        body.add("refresh_token", refreshToken);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
+
+        try {
+            ResponseEntity<AuthResponse> response = restTemplate.postForEntity(tokenUrl, request, AuthResponse.class);
+            log.info("Token refreshed successfully");
+            return response.getBody();
+        } catch (HttpClientErrorException e) {
+            log.error("Refresh token expired or invalid: {}", e.getResponseBodyAsString());
+            // 100% Best Practice: Ném lỗi cụ thể để Controller biết đường xóa Cookie
+            throw new RuntimeException("Refresh token expired");
         }
     }
 }

@@ -61,4 +61,8 @@ public interface IKeycloak {
     AuthResponse exchangeSocialToken(String providerAlias, String providerToken);
 
     void logout(String refreshToken);
+
+    void sendResetPasswordEmail(String userId);
+
+    AuthResponse refreshAccessToken(String refreshToken);
 }
