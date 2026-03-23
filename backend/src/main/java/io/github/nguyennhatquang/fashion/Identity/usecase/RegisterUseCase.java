@@ -51,6 +51,8 @@ public class RegisterUseCase implements IRegisterUseCase {
                 .otpExpiresAt(LocalDateTime.now().plusMinutes(10))
                 .typeLogin(TypeLoginEnum.Local)
                 .keycloakId(resutltkeycloak.getId())
+                .countOtp(0)
+                .timeResendEmail(LocalDateTime.now().plusMinutes(30))
                 .build();
         UserProfile userProfilesave = userProfileRepo.save(user);
         if (userProfilesave == null) {
@@ -66,20 +68,24 @@ public class RegisterUseCase implements IRegisterUseCase {
     @Override
     @Transactional
     public Result<UserProfile, Exception> RegisterStepTwo(RegisterRequest.RegisterStepTwo request) {
-
         UserProfile user = userProfileRepo.findbyEmail(request.email());
         if (user == null) {
             return Result.error(new Exception("User not found"));
         }
-        boolean checktimeopt = user.getOtpExpiresAt().isAfter(LocalDateTime.now());
-
-        if (!user.getOtp().equals(request.otp()) || !checktimeopt) {
+        if (user.getCountOtp() >= 3) {
             userProfileRepo.deleteByEmail(request.email());
             keycloakRepo.deleteUserByEmail(request.email());
+            return Result.error(new Exception("Too many attempts"));
+        }
+        boolean checktimeopt = user.getOtpExpiresAt().isAfter(LocalDateTime.now());
+        if (!user.getOtp().equals(request.otp()) || !checktimeopt) {
+            user.setCountOtp(user.getCountOtp() + 1);
+            userProfileRepo.save(user);
             return Result.error(new Exception("Invalid OTP"));
         }
         user.setOtp(null);
         user.setOtpExpiresAt(null);
+        user.setCountOtp(0);
         UserProfile userProfilesave = userProfileRepo.save(user);
         if (userProfilesave == null) {
             return Result.error(new Exception("Failed to update user"));

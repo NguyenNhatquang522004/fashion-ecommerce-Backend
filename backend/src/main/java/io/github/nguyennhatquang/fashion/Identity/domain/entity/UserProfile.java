@@ -50,6 +50,12 @@ public class UserProfile {
     @Column(name = "otp_expires_at", nullable = false)
     private LocalDateTime otpExpiresAt;
 
+    @Column(name = "count_otp", nullable = false)
+    private Integer countOtp;
+
+    @Column(name = "time_resend_Email")
+    private LocalDateTime timeResendEmail;
+
     @Column(name = "type_login", nullable = false)
     private TypeLoginEnum typeLogin;
 
