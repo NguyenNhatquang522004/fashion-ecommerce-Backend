@@ -1,2 +1,186 @@
-/mvnw text eol=lf
-*.cmd text eol=crlf
+# =============================================================================
+# .gitattributes — Monorepo: Java Spring Boot Backend + Next.js Frontend
+# Best practice: normalize line endings and mark binary files
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Default behavior: auto-detect text files and normalize line endings to LF
+# on commit; checkout with the platform's native line endings.
+# ---------------------------------------------------------------------------
+* text=auto eol=lf
+
+# ---------------------------------------------------------------------------
+# Shell / Script files — always LF
+# ---------------------------------------------------------------------------
+*.sh        text eol=lf
+*.bash      text eol=lf
+*.zsh       text eol=lf
+*.fish      text eol=lf
+*.command   text eol=lf
+.env*       text eol=lf
+Makefile    text eol=lf
+Dockerfile  text eol=lf
+*.dockerfile text eol=lf
+
+# Maven wrapper — must be LF so it runs on Linux/macOS CI runners
+mvnw        text eol=lf
+
+# Windows batch / cmd files — always CRLF
+*.cmd       text eol=crlf
+*.bat       text eol=crlf
+*.ps1       text eol=crlf
+
+# ---------------------------------------------------------------------------
+# Web (Frontend — Next.js / TypeScript / CSS / HTML)
+# ---------------------------------------------------------------------------
+*.ts        text eol=lf diff=typescript
+*.tsx       text eol=lf diff=typescript
+*.js        text eol=lf diff=javascript
+*.jsx       text eol=lf diff=javascript
+*.mjs       text eol=lf diff=javascript
+*.cjs       text eol=lf diff=javascript
+*.css       text eol=lf diff=css
+*.scss      text eol=lf diff=css
+*.sass      text eol=lf diff=css
+*.less      text eol=lf diff=css
+*.html      text eol=lf diff=html
+*.htm       text eol=lf diff=html
+*.vue       text eol=lf
+
+# ---------------------------------------------------------------------------
+# Java / JVM (Backend — Spring Boot)
+# ---------------------------------------------------------------------------
+*.java      text eol=lf diff=java
+*.kt        text eol=lf diff=kotlin
+*.kts       text eol=lf diff=kotlin
+*.groovy    text eol=lf diff=java
+*.scala     text eol=lf diff=java
+*.gradle    text eol=lf diff=java
+*.class     binary
+*.jar       binary
+*.war       binary
+*.ear       binary
+*.aar       binary
+
+# ---------------------------------------------------------------------------
+# Configuration / Data
+# ---------------------------------------------------------------------------
+*.json      text eol=lf
+*.jsonc     text eol=lf
+*.yaml      text eol=lf diff=yaml
+*.yml       text eol=lf diff=yaml
+*.toml      text eol=lf
+*.ini       text eol=lf
+*.cfg       text eol=lf
+*.conf      text eol=lf
+*.properties text eol=lf
+*.xml       text eol=lf diff=xml
+*.sql       text eol=lf
+*.graphql   text eol=lf
+*.gql       text eol=lf
+*.proto     text eol=lf
+
+# ---------------------------------------------------------------------------
+# Documentation / Text
+# ---------------------------------------------------------------------------
+*.md        text eol=lf diff=markdown
+*.mdx       text eol=lf diff=markdown
+*.txt       text eol=lf
+*.rst       text eol=lf
+*.adoc      text eol=lf
+*.tex       text eol=lf
+*.csv       text eol=lf
+LICENSE     text eol=lf
+AUTHORS     text eol=lf
+CHANGELOG   text eol=lf
+CONTRIBUTING text eol=lf
+
+# ---------------------------------------------------------------------------
+# Binary — mark explicitly so git never tries to diff/merge them as text
+# ---------------------------------------------------------------------------
+# Images
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.bmp       binary
+*.tiff      binary
+*.ico       binary
+*.svg       text eol=lf          # SVG is XML — treat as text
+*.webp      binary
+*.avif      binary
+
+# Fonts
+*.ttf       binary
+*.otf       binary
+*.woff      binary
+*.woff2     binary
+*.eot       binary
+
+# Audio / Video
+*.mp3       binary
+*.mp4       binary
+*.avi       binary
+*.mov       binary
+*.wmv       binary
+*.flv       binary
+*.webm      binary
+*.ogg       binary
+*.wav       binary
+
+# Archives / Packages
+*.zip       binary
+*.tar       binary
+*.gz        binary
+*.bz2       binary
+*.xz        binary
+*.7z        binary
+*.rar       binary
+*.tgz       binary
+
+# Compiled / Object files
+*.o         binary
+*.so        binary
+*.dll       binary
+*.dylib     binary
+*.exe       binary
+*.apk       binary
+*.wasm      binary
+
+# Documents
+*.pdf       binary
+*.doc       binary
+*.docx      binary
+*.xls       binary
+*.xlsx      binary
+*.ppt       binary
+*.pptx      binary
+
+# ---------------------------------------------------------------------------
+# Linguist — GitHub language statistics overrides
+# ---------------------------------------------------------------------------
+# Exclude generated/vendored files from language stats
+frontend/.next/**          linguist-generated=true
+frontend/node_modules/**   linguist-vendored=true
+target/**                  linguist-generated=true
+**/generated/**            linguist-generated=true
+**/__generated__/**        linguist-generated=true
+*-lock.json                linguist-generated=true
+*.lock                     linguist-generated=true
+
+# ---------------------------------------------------------------------------
+# Diff drivers — improve readability of diffs in specific file types
+# ---------------------------------------------------------------------------
+*.ipynb     diff=ipynb
+
+# ---------------------------------------------------------------------------
+# Export-ignore — exclude files/dirs from `git archive` (e.g. npm pack, releases)
+# ---------------------------------------------------------------------------
+.github/                   export-ignore
+.gitattributes             export-ignore
+.gitignore                 export-ignore
+docs/                      export-ignore
+**/*.test.ts               export-ignore
+**/*.spec.ts               export-ignore
+**/*.test.tsx              export-ignore
+**/*.spec.tsx              export-ignore
