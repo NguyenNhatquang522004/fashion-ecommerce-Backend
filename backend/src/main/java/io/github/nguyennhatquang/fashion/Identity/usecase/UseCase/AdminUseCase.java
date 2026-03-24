@@ -1,5 +1,7 @@
 package io.github.nguyennhatquang.fashion.Identity.usecase.UseCase;
 
+import java.util.UUID;
+
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Service;
 
@@ -7,7 +9,8 @@ import io.github.nguyennhatquang.fashion.Identity.delivery.dto.Admin.AdminReques
 import io.github.nguyennhatquang.fashion.Identity.domain.IRepository.postgres.IRepositoryUserProfile;
 import io.github.nguyennhatquang.fashion.Identity.domain.entity.UserProfile;
 import io.github.nguyennhatquang.fashion.Identity.usecase.IUseCase.IAdminUseCase;
-import io.github.nguyennhatquang.fashion.common.request.PanigationRequest;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 import io.github.nguyennhatquang.fashion.common.shared.IKeycloak;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +22,18 @@ public class AdminUseCase implements IAdminUseCase {
     private final IKeycloak keycloakRepo;
 
     @Override
-    public Result<UserProfile, Exception> getAllUser(PanigationRequest panigationRequest) {
-        throw new UnsupportedOperationException("Unimplemented method 'getAllUser'");
+    public Result<UserProfile, Exception> GetDetailUser(UUID id) {
+        UserProfile data = userProfileRepo.findById(id);
+        if (data == null) {
+            return Result.error(null);
+        }
+        return Result.success(data);
+    }
+
+    @Override
+    public Result<ExactPageResponse<UserProfile>, Exception> getAllUser(ExactPageRequest panigationRequest) {
+        ExactPageResponse<UserProfile> data = userProfileRepo.getProfilesExactPage(panigationRequest);
+        return Result.success(data);
     }
 
     @Override

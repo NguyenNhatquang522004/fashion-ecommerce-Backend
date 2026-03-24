@@ -7,7 +7,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import io.github.nguyennhatquang.fashion.Identity.domain.entity.UserProfile;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
 import io.github.nguyennhatquang.fashion.common.request.PanigationRequest;
+import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.PanigationResponse;
 
 public interface IRepositoryUserProfile {
@@ -33,6 +35,8 @@ public interface IRepositoryUserProfile {
 
     void deleteByEmail(String email);
 
-    PanigationResponse<Object> getProfilesCursor(PanigationRequest request)
+    PanigationResponse<UserProfile> getProfilesCursor(PanigationRequest request);
+
+    ExactPageResponse<UserProfile> getProfilesExactPage(ExactPageRequest request);
 
 }

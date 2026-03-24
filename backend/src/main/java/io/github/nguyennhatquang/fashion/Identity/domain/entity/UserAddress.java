@@ -14,7 +14,9 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "user_addresses")
+@Table(name = "user_addresses", indexes = {
+        @Index(name = "idx_user_addresses_user_created_id", columnList = "user_profile_id, created_at DESC, id DESC")
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -90,6 +92,5 @@ public class UserAddress {
 
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
-
 
 }

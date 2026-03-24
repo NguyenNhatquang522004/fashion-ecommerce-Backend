@@ -2,15 +2,12 @@ package io.github.nguyennhatquang.fashion.common.response;
 
 import java.util.List;
 
-import org.apache.poi.ss.formula.functions.T;
-
-import com.google.auto.value.AutoValue.Builder;
-
+import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
-public class PanigationResponse {
+public class PanigationResponse<T> {
     private String cursor; // Cursor để dùng cho lần gọi tiếp theo
     private Integer limit;
     private String sort;
@@ -18,4 +15,3 @@ public class PanigationResponse {
     private Boolean hasPrevious;
     private List<T> data;
 }
-    
