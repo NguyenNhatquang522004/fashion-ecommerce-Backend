@@ -25,7 +25,8 @@ import java.util.UUID;
         @Index(name = "idx_user_profiles_email", columnList = "email"),
         @Index(name = "idx_user_profiles_phone_number", columnList = "phone_number"),
         @Index(name = "idx_user_profiles_keycloak_id", columnList = "keycloak_id"),
-        @Index(name = "idx_user_profile_loyalty_tier_and_status", columnList = "loyalty_tier, status")
+        @Index(name = "idx_user_profile_loyalty_tier_and_status", columnList = "loyalty_tier, status"),
+        @Index(name = "idx_user_profiles_created_at_id", columnList = "created_at DESC, id DESC"),
 })
 @Getter
 @Setter

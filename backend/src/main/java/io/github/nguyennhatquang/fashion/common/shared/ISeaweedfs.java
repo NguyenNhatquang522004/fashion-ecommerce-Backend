@@ -2,11 +2,18 @@ package io.github.nguyennhatquang.fashion.common.shared;
 
 import java.io.InputStream;
 
+import io.github.nguyennhatquang.fashion.common.Enum.StorageFolderEnum;
 
 public interface ISeaweedfs {
-    String uploadFile(String fileName, InputStream inputStream, String contentType, long contentLength);
+    String uploadFile(StorageFolderEnum folder, String ownerId, String originalFileName,
+            InputStream inputStream, String contentType, long contentLength);
 
-    void deleteFile(String fileName);
+    String generatePresignedUploadUrl(StorageFolderEnum folder, String ownerId,
+            String originalFileName, String contentType);
 
-    String getFileUrl(String fileName);
+    void deleteFile(String fileKeyOrUrl);
+
+    String generatePresignedDownloadUrl(String fileKeyOrUrl);
+
+    String getFileUrl(String fileKeyOrUrl);
 }

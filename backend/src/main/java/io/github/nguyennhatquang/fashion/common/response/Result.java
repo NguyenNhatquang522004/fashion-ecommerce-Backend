@@ -9,6 +9,7 @@ public record Result<T, E>(T data, E error) {
         return new Result<>(null, error);
     }
 
+ 
     public boolean hasError() {
         return error != null;
     }

@@ -5,23 +5,17 @@ import java.time.Duration;
 
 import org.springframework.stereotype.Service;
 
+import io.github.nguyennhatquang.fashion.common.Enum.StorageFolderEnum;
 import io.github.nguyennhatquang.fashion.common.shared.ISeaweedfs;
 import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
-import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
-import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
-import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
-import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
-import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.*;
 
+@Slf4j
 @Service
 public class SeaweedfsAdapter implements ISeaweedfs {
     private final S3Client s3Client;
@@ -32,86 +26,133 @@ public class SeaweedfsAdapter implements ISeaweedfs {
     public SeaweedfsAdapter(S3Client s3Client, SeaweedFsProperties properties, S3Presigner s3Presigner) {
         this.s3Client = s3Client;
         this.bucketName = properties.bucket();
-        this.filerEndpoint = properties.filerEndpoint(); // Lấy Filer endpoint
+        this.filerEndpoint = properties.filerEndpoint();
         this.s3Presigner = s3Presigner;
     }
 
-    // Tự động kiểm tra và tạo Bucket khi ứng dụng Spring Boot vừa khởi chạy xong
     @PostConstruct
     public void initBucketIfNotExists() {
         try {
             s3Client.headBucket(HeadBucketRequest.builder().bucket(bucketName).build());
+            log.info("SeaweedFS Bucket '{}' is ready.", bucketName);
         } catch (NoSuchBucketException e) {
-            // Nếu bucket chưa tồn tại -> Tạo mới
             s3Client.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
+            log.info("Created new SeaweedFS Bucket '{}'.", bucketName);
         } catch (Exception e) {
-            // Các lỗi khác (ví dụ chưa bật Docker, sai credentials...) có thể throw hoặc
-            // log ra tùy bạn
-            throw new RuntimeException("Lỗi khi khởi tạo SeaweedFS Bucket: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi khởi tạo SeaweedFS Bucket: " + e.getMessage(), e);
         }
     }
 
+    // =========================================================================
+    // 1. NHÓM HÀM UPLOAD (Sử dụng StorageFolderEnum & ownerId để TẠO KEY MỚI)
+    // =========================================================================
+
     @Override
-    public String uploadFile(String fileName, InputStream inputStream, String contentType, long contentLength) {
+    public String uploadFile(StorageFolderEnum folder, String ownerId, String originalFileName,
+            InputStream inputStream, String contentType, long contentLength) {
+        // 1. Sinh S3 Key tự động (VD: users/123/avatars/uuid-avatar.png)
+        String s3Key = folder.buildKey(ownerId, originalFileName);
+
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
-                .key(fileName)
+                .key(s3Key)
                 .contentType(contentType)
                 .build();
 
         s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(inputStream, contentLength));
-        return getFileUrl(fileName);
+
+        // Trả về Full URL để lưu vào DB
+        return getFileUrl(s3Key);
     }
 
+    // output bao gồm presigned_url Client tự đẩy file lên SeaweedFS. final_url:
+    // Đường dẫn gốc (Sạch) mà file sẽ nằm lại sau khi upload xong. (Để lát nữa
+    // Client biết đường mà gửi lại cho Backend lưu Database).
     @Override
-    public void deleteFile(String fileName) {
-        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
-                .bucket(bucketName)
-                .key(fileName)
-                .build();
+    public String generatePresignedUploadUrl(StorageFolderEnum folder, String ownerId,
+            String originalFileName, String contentType) {
+        // 1. Sinh S3 Key tự động
+        String s3Key = folder.buildKey(ownerId, originalFileName);
 
-        s3Client.deleteObject(deleteObjectRequest);
-    }
-
-    @Override
-    public String getFileUrl(String fileName) {
-        // Tối ưu nhất: Trả về link của Filer (port 8888) theo cấu trúc thư mục của
-        // SeaweedFS
-        // Ví dụ: http://localhost:8888/buckets/my-fashion-bucket/hinh-ao-thun.png
-        return String.format("%s/buckets/%s/%s", filerEndpoint, bucketName, fileName);
-    }
-
-    public String generatePresignedUploadUrl(String fileName, String contentType) {
         PutObjectRequest objectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
-                .key(fileName)
+                .key(s3Key)
                 .contentType(contentType)
                 .build();
 
         PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(10)) // Link có hiệu lực trong 10 phút
+                .signatureDuration(Duration.ofMinutes(15)) // Tăng lên 15 phút cho an toàn mạng chậm
                 .putObjectRequest(objectRequest)
                 .build();
 
-        PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(presignRequest);
-        return presignedRequest.url().toString();
+        return s3Presigner.presignPutObject(presignRequest).url().toString();
     }
 
-    /**
-     * Tạo URL để Client Download file (Dùng cho các file riêng tư/Private)
-     */
-    public String generatePresignedDownloadUrl(String fileName) {
+    // =========================================================================
+    // 2. NHÓM HÀM ĐỌC / XÓA (Phải sử dụng chính xác S3 Key hoặc Full URL từ DB)
+    // =========================================================================
+
+    @Override
+    public void deleteFile(String fileKeyOrUrl) {
+        if (fileKeyOrUrl == null || fileKeyOrUrl.isBlank())
+            return;
+
+        // Thông minh: Tự bóc tách S3 Key nếu User truyền vào nguyên cái URL từ DB
+        String s3Key = extractS3Key(fileKeyOrUrl);
+
+        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                .bucket(bucketName)
+                .key(s3Key)
+                .build();
+
+        s3Client.deleteObject(deleteObjectRequest);
+        log.info("Deleted file from SeaweedFS: {}", s3Key);
+    }
+
+    @Override
+    public String getFileUrl(String fileKeyOrUrl) {
+        String s3Key = extractS3Key(fileKeyOrUrl);
+        return String.format("%s/buckets/%s/%s", filerEndpoint, bucketName, s3Key);
+    }
+
+    @Override
+    public String generatePresignedDownloadUrl(String fileKeyOrUrl) {
+        String s3Key = extractS3Key(fileKeyOrUrl);
+
         GetObjectRequest objectRequest = GetObjectRequest.builder()
                 .bucket(bucketName)
-                .key(fileName)
+                .key(s3Key)
                 .build();
 
         GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(60)) // Link xem ảnh/video trong 1 giờ
+                .signatureDuration(Duration.ofMinutes(60))
                 .getObjectRequest(objectRequest)
                 .build();
 
-        PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
-        return presignedRequest.url().toString();
+        return s3Presigner.presignGetObject(presignRequest).url().toString();
+    }
+
+    // =========================================================================
+    // 3. HELPER METHOD (Logic bóc tách chuỗi)
+    // =========================================================================
+
+    /**
+     * Hàm helper cực kỳ quan trọng:
+     * Giúp hệ thống vẫn chạy đúng dù bạn truyền S3 Key "users/123/avatar.png"
+     * hay truyền Full URL
+     * "http://localhost:8888/buckets/my-bucket/users/123/avatar.png"
+     */
+    private String extractS3Key(String input) {
+        if (input == null)
+            return "";
+
+        // Nếu là URL (bắt đầu bằng http hoặc chứa tên bucket)
+        String bucketPrefix = "/buckets/" + bucketName + "/";
+        if (input.contains(bucketPrefix)) {
+            return input.substring(input.indexOf(bucketPrefix) + bucketPrefix.length());
+        }
+
+        // Xóa dấu slash ở đầu nếu có (VD: "/users/123" -> "users/123")
+        return input.startsWith("/") ? input.substring(1) : input;
     }
 }

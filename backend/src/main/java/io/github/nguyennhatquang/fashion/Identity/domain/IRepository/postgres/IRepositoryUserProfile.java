@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import io.github.nguyennhatquang.fashion.Identity.domain.entity.UserProfile;
+import io.github.nguyennhatquang.fashion.common.request.PanigationRequest;
+import io.github.nguyennhatquang.fashion.common.response.PanigationResponse;
 
 public interface IRepositoryUserProfile {
     UserProfile save(UserProfile userProfile);
@@ -30,5 +32,7 @@ public interface IRepositoryUserProfile {
     UserProfile findbyEmail(String email);
 
     void deleteByEmail(String email);
+
+    PanigationResponse<Object> getProfilesCursor(PanigationRequest request)
 
 }
