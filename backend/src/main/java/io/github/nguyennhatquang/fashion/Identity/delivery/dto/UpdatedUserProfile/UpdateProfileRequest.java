@@ -34,5 +34,5 @@ public class UpdateProfileRequest {
     private GenderEnum gender;
 
     // File upload cho avatar
-    private MultipartFile avatarFile;
+    private String avatarFile;
 }

@@ -22,11 +22,15 @@ public class LoginUseCase {
     private final LoginStrategyFactory loginFactory;
 
     public AuthResponse execute(LoginRequest.Command request) {
-        // 1. Lấy đúng Strategy dựa trên request.loginType()
-        ILoginStrategy strategy = loginFactory.getStrategy(request.loginType());
+        try {
+            // 1. Lấy đúng Strategy dựa trên request.loginType()
+            ILoginStrategy strategy = loginFactory.getStrategy(request.loginType());
 
-        // 2. Thực thi đăng nhập
-        return strategy.authenticate(request);
+            // 2. Thực thi đăng nhập
+            return strategy.authenticate(request);
+        } catch (Exception e) {
+            throw new RuntimeException("Login failed", e);
+        }
     }
 
 }

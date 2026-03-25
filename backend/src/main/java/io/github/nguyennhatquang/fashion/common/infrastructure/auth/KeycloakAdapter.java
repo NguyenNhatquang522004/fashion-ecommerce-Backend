@@ -204,6 +204,39 @@ public class KeycloakAdapter implements IKeycloak {
     }
 
     @Override
+    public void syncUserRoles(String userId, List<RoleTypeEnum> newRoleNames) {
+        UserResource userResource = getUsersResource().get(userId);
+
+        // 1. Lấy danh sách các quyền HIỆN TẠI của User
+        List<RoleRepresentation> currentRoles = userResource.roles().realmLevel().listAll();
+
+        // 2. Xóa toàn bộ các quyền hiện tại (Tránh bị duplicate hoặc giữ lại quyền cũ)
+        if (!currentRoles.isEmpty()) {
+            userResource.roles().realmLevel().remove(currentRoles);
+        }
+
+        // 3. Nếu danh sách quyền mới trống, thì dừng lại (User đã bị tước hết quyền)
+        if (newRoleNames == null || newRoleNames.isEmpty()) {
+            return;
+        }
+
+        // 4. Tìm các Object Role tương ứng với tên quyền mới trong Keycloak
+        List<RoleRepresentation> newRoles = newRoleNames.stream()
+                .map(roleName -> {
+                    RoleRepresentation role = getRealmResource().roles().get(roleName.toString()).toRepresentation();
+                    if (role == null) {
+                        throw new IllegalArgumentException("Role " + roleName + " không tồn tại trong hệ thống");
+                    }
+                    return role;
+                })
+                .collect(Collectors.toList());
+
+        // 5. Gán danh sách quyền mới cho User
+        userResource.roles().realmLevel().add(newRoles);
+        log.info("Successfully synced roles for user ID {}: {}", userId, newRoleNames);
+    }
+
+    @Override
     public void addRole(String roleName) {
         RoleRepresentation role = new RoleRepresentation();
         role.setName(roleName);

@@ -21,10 +21,16 @@ public class KeycloakAuditorAware implements AuditorAware<String> {
                 .filter(auth -> auth instanceof JwtAuthenticationToken)
                 .map(auth -> {
                     Jwt jwt = ((JwtAuthenticationToken) auth).getToken();
-                    String auditor = jwt.getClaimAsString("preferred_username");
-                    // An toàn hơn: Kiểm tra chuỗi rỗng trước khi trả về
-                    return (auditor != null && !auditor.trim().isEmpty()) ? auditor : jwt.getSubject();
-                })
-                .or(() -> Optional.of("SYSTEM")); 
+                    String auditor = jwt.getClaimAsString("userId");
+
+                    // Kiểm tra gắt gao: Nếu không có userId thì chặn đứng thao tác
+                    if (auditor == null || auditor.trim().isEmpty()) {
+                        throw new RuntimeException("Xác thực không hợp lệ: Thiếu định danh người dùng (userId)");
+                    }
+
+                    return auditor;
+                });
+        // Lưu ý: Không dùng .or(() -> Optional.of("SYSTEM")) nữa nếu bạn muốn bắt buộc
+        // phải có User
     }
 }

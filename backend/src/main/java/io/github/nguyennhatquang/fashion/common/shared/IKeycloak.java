@@ -1,9 +1,11 @@
 package io.github.nguyennhatquang.fashion.common.shared;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.keycloak.representations.idm.UserRepresentation;
 
+import io.github.nguyennhatquang.fashion.common.Enum.RoleTypeEnum;
 import io.github.nguyennhatquang.fashion.common.infrastructure.auth.AuthResponse;
 
 public interface IKeycloak {
@@ -49,6 +51,8 @@ public interface IKeycloak {
     void getAllRoles();
 
     void updateRole(String roleId, String newRoleName);
+
+    void syncUserRoles(String userId, List<RoleTypeEnum> newRoleNames);
 
     void addRole(String roleName);
 

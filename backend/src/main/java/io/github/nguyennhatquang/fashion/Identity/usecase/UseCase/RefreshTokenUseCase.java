@@ -14,6 +14,10 @@ public class RefreshTokenUseCase implements IRefreshTokenUseCase {
 
     @Override
     public AuthResponse execute(String refreshToken) {
-        return keycloak.refreshAccessToken(refreshToken);
+        try {
+            return keycloak.refreshAccessToken(refreshToken);
+        } catch (Exception e) {
+            throw new RuntimeException("Refresh token failed", e);
+        }
     }
 }

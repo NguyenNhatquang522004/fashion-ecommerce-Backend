@@ -36,138 +36,197 @@ public class RegisterUseCase implements IRegisterUseCase {
     @Override
     @Transactional
     public Result<UserProfile, Exception> RegisterStepOne(RegisterRequest.RegisterStepOne request) {
-        // TODO Auto-generated method stub
-        UserRepresentation keycloakUser = new UserRepresentation();
-        keycloakUser.setEmail(request.email());
-        keycloakUser.setEnabled(true);
-        keycloakUser.setEmailVerified(false);
-        UserRepresentation resutltkeycloak = keycloakRepo.updatedOrSaveUser(keycloakUser);
-        if (resutltkeycloak == null) {
-            return Result.error(new Exception("Failed to create user"));
-        }
-        String codeotp = String.format("%06d", new java.security.SecureRandom().nextInt(1000000));
-        UserProfile user = UserProfile.builder()
-                .email(request.email())
-                .otp(codeotp)
-                .otpExpiresAt(LocalDateTime.now().plusMinutes(10))
-                .typeLogin(TypeLoginEnum.Local)
-                .keycloakId(resutltkeycloak.getId())
-                .countOtp(0)
-                .timeResendEmail(LocalDateTime.now().plusMinutes(30))
-                .build();
-        UserProfile userProfilesave = userProfileRepo.save(user);
-        if (userProfilesave == null) {
-            return Result.error(new Exception("Failed to create user"));
-        }
-        String html = htmlOTp(userProfilesave.getEmail(), userProfilesave.getOtp(), 10);
-        EmailMessage message = EmailMessage.ofHtml(html, userProfilesave.getEmail(), "Verify OTP");
-        emailService.send(message);
-        return Result.success(user);
+        try {
+            UserRepresentation keycloakUser = new UserRepresentation();
+            keycloakUser.setEmail(request.email());
+            keycloakUser.setEnabled(true);
+            keycloakUser.setEmailVerified(false);
 
+            UserRepresentation resutltkeycloak = keycloakRepo.updatedOrSaveUser(keycloakUser);
+            if (resutltkeycloak == null) {
+                return Result.error(new Exception("Failed to create user in Keycloak"));
+            }
+
+            String codeotp = String.format("%06d", new java.security.SecureRandom().nextInt(1000000));
+            UserProfile user = UserProfile.builder()
+                    .email(request.email())
+                    .otp(codeotp)
+                    .otpExpiresAt(LocalDateTime.now().plusMinutes(10))
+                    .typeLogin(TypeLoginEnum.Local)
+                    .keycloakId(resutltkeycloak.getId())
+                    .countOtp(1)
+                    .timeResendEmail(LocalDateTime.now().plusMinutes(30))
+                    .build();
+
+            UserProfile userProfilesave = userProfileRepo.save(user);
+            if (userProfilesave == null) {
+                return Result.error(new Exception("Failed to save user profile"));
+            }
+
+            String html = htmlOTp(userProfilesave.getEmail(), userProfilesave.getOtp(), 10);
+            EmailMessage message = EmailMessage.ofHtml(html, userProfilesave.getEmail(), "Verify OTP");
+            emailService.send(message);
+
+            return Result.success(user);
+        } catch (Exception e) {
+            return Result.error(e);
+        }
     }
 
     @Override
     @Transactional
     public Result<UserProfile, Exception> RegisterStepTwo(RegisterRequest.RegisterStepTwo request) {
-        UserProfile user = userProfileRepo.findbyEmail(request.email());
-        if (user == null) {
-            return Result.error(new Exception("User not found"));
+        try {
+            UserProfile user = userProfileRepo.findbyEmail(request.email());
+            if (user == null) {
+                return Result.error(new Exception("User not found"));
+            }
+            if (user.getCountOtp() >= 3) {
+                userProfileRepo.deleteByEmail(request.email());
+                keycloakRepo.deleteUserByEmail(request.email());
+                return Result.error(new Exception("Too many attempts"));
+            }
+            boolean checktimeopt = user.getOtpExpiresAt().isAfter(LocalDateTime.now());
+            if (!user.getOtp().equals(request.otp()) || !checktimeopt) {
+                user.setCountOtp(user.getCountOtp() + 1);
+                userProfileRepo.save(user);
+                return Result.error(new Exception("Invalid OTP"));
+            }
+            user.setOtp(null);
+            user.setOtpExpiresAt(null);
+            user.setCountOtp(0);
+            UserProfile userProfilesave = userProfileRepo.save(user);
+            if (userProfilesave == null) {
+                return Result.error(new Exception("Failed to update user profile"));
+            }
+            Optional<UserRepresentation> userkeycloak = keycloakRepo.findByKeyEmail(request.email());
+            if (userkeycloak.isEmpty()) {
+                return Result.error(new Exception("User not found in Keycloak"));
+            }
+            userkeycloak.get().setEmailVerified(true);
+            UserRepresentation userkeycloakv2 = keycloakRepo.updatedOrSaveUser(userkeycloak.get());
+            if (userkeycloakv2 == null) {
+                return Result.error(new Exception("Failed to update user in Keycloak"));
+            }
+            return Result.success(user);
+        } catch (Exception e) {
+            return Result.error(e);
         }
-        if (user.getCountOtp() >= 3) {
-            userProfileRepo.deleteByEmail(request.email());
-            keycloakRepo.deleteUserByEmail(request.email());
-            return Result.error(new Exception("Too many attempts"));
-        }
-        boolean checktimeopt = user.getOtpExpiresAt().isAfter(LocalDateTime.now());
-        if (!user.getOtp().equals(request.otp()) || !checktimeopt) {
-            user.setCountOtp(user.getCountOtp() + 1);
-            userProfileRepo.save(user);
-            return Result.error(new Exception("Invalid OTP"));
-        }
-        user.setOtp(null);
-        user.setOtpExpiresAt(null);
-        user.setCountOtp(0);
-        UserProfile userProfilesave = userProfileRepo.save(user);
-        if (userProfilesave == null) {
-            return Result.error(new Exception("Failed to update user"));
-        }
-        Optional<UserRepresentation> userkeycloak = keycloakRepo.findByKeyEmail(request.email());
-        if (userkeycloak.isEmpty()) {
-            return Result.error(new Exception("Failed to update user"));
-        }
-        userkeycloak.get().setEmailVerified(true);
-        UserRepresentation userkeycloakv2 = keycloakRepo.updatedOrSaveUser(userkeycloak.get());
-        if (userkeycloakv2 == null) {
-            return Result.error(new Exception("Failed to update user"));
-        }
-        return Result.success(user);
     }
 
     @Override
     @Transactional
     public Result<UserProfile, Exception> RegisterStepThree(RegisterRequest.RegisterStepThree request) {
-        // TODO Auto-generated method stub
-        UserProfile user = userProfileRepo.findbyEmail(request.email());
-        if (user == null) {
-            return Result.error(new Exception("User not found"));
-        }
-        user.setFullName(request.username());
-        UserProfile userProfilesave = userProfileRepo.save(user);
-        if (userProfilesave == null) {
-            return Result.error(new Exception("Failed to update user"));
-        }
-        Optional<UserRepresentation> userkeycloak = keycloakRepo.findByKeyEmail(request.email());
-        if (userkeycloak.isEmpty()) {
-            return Result.error(new Exception("Failed to update user"));
-        }
-        userkeycloak.get().setUsername(request.username());
+        try {
+            UserProfile user = userProfileRepo.findbyEmail(request.email());
+            if (user == null) {
+                return Result.error(new Exception("User not found"));
+            }
+            user.setFullName(request.username());
+            UserProfile userProfilesave = userProfileRepo.save(user);
+            if (userProfilesave == null) {
+                return Result.error(new Exception("Failed to update user profile"));
+            }
+            Optional<UserRepresentation> userkeycloak = keycloakRepo.findByKeyEmail(request.email());
+            if (userkeycloak.isEmpty()) {
+                return Result.error(new Exception("User not found in Keycloak"));
+            }
+            userkeycloak.get().setUsername(request.username());
+            userkeycloak.get().setFirstName(request.username());
 
-        keycloakRepo.updatedOrSaveUser(userkeycloak.get());
-        userkeycloak.get().setFirstName(request.username());
-        CredentialRepresentation resetPassword = new CredentialRepresentation();
-        resetPassword.setType(CredentialRepresentation.PASSWORD);
-        resetPassword.setValue(request.password());
-        resetPassword.setTemporary(false);
-        userkeycloak.get().setCredentials(Collections.singletonList(resetPassword));
-        UserRepresentation userkeycloakv2 = keycloakRepo.updatedOrSaveUser(userkeycloak.get());
-        if (userkeycloakv2 == null) {
-            return Result.error(new Exception("Failed to update user"));
+            CredentialRepresentation resetPassword = new CredentialRepresentation();
+            resetPassword.setType(CredentialRepresentation.PASSWORD);
+            resetPassword.setValue(request.password());
+            resetPassword.setTemporary(false);
+            userkeycloak.get().setCredentials(Collections.singletonList(resetPassword));
+
+            UserRepresentation userkeycloakv2 = keycloakRepo.updatedOrSaveUser(userkeycloak.get());
+            if (userkeycloakv2 == null) {
+                return Result.error(new Exception("Failed to update user in Keycloak"));
+            }
+            return Result.success(user);
+        } catch (Exception e) {
+            return Result.error(e);
         }
-        return Result.success(user);
     }
 
     @Override
     @Transactional
     public Result<UserProfile, Exception> RegisterStepFour(RegisterRequest.RegisterStepFour request) {
-        // TODO Auto-generated method stub
-        UserProfile user = userProfileRepo.findbyEmail(request.email());
-        if (user == null) {
-            return Result.error(new Exception("User not found"));
+        try {
+            UserProfile user = userProfileRepo.findbyEmail(request.email());
+            if (user == null) {
+                return Result.error(new Exception("User not found"));
+            }
+
+            user.setPhoneNumber(request.phoneNumber());
+            user.setGender(request.gender());
+            user.setLoyaltyTier(LoyaltyTierEnum.BRONZE);
+            user.setStatus(ProfileStatusEnum.ACTIVE);
+            UserProfile usersave = userProfileRepo.save(user);
+            if (usersave == null) {
+                return Result.error(new Exception("Failed to update user profile"));
+            }
+
+            Optional<UserRepresentation> userkeycloak = keycloakRepo.findByKeyEmail(request.email());
+            if (userkeycloak.isEmpty()) {
+                return Result.error(new Exception("User not found in Keycloak"));
+            }
+
+            Map<String, List<String>> attributes = userkeycloak.get().getAttributes();
+            if (attributes == null) {
+                attributes = new HashMap<>();
+            }
+            attributes.put("email", Collections.singletonList(request.email()));
+            attributes.put("userId", Collections.singletonList(user.getId().toString()));
+            attributes.put("phoneNumber", Collections.singletonList(request.phoneNumber()));
+            attributes.put("gender", Collections.singletonList(request.gender().name()));
+            userkeycloak.get().setAttributes(attributes);
+
+            UserRepresentation userkeycloakv2 = keycloakRepo.updatedOrSaveUser(userkeycloak.get());
+            if (userkeycloakv2 == null) {
+                return Result.error(new Exception("Failed to update user in Keycloak"));
+            }
+            return Result.success(usersave);
+        } catch (Exception e) {
+            return Result.error(e);
         }
-        user.setPhoneNumber(request.phoneNumber());
-        user.setGender(request.gender());
-        user.setLoyaltyTier(LoyaltyTierEnum.BRONZE);
-        user.setStatus(ProfileStatusEnum.ACTIVE);
-        UserProfile usersave = userProfileRepo.save(user);
-        if (usersave == null) {
-            return Result.error(new Exception("Failed to update user"));
+    }
+
+    @Override
+    @Transactional
+    public Result<UserProfile, Exception> ResendOTP(String email) {
+        try {
+            UserProfile user = userProfileRepo.findbyEmail(email);
+            if (user == null) {
+                return Result.error(new Exception("User not found"));
+            }
+            if (user.getCountOtp() == 3) {
+                userProfileRepo.delete(user);
+                return Result.error(new Exception("User is deleted"));
+            }
+            if (user.getStatus() == ProfileStatusEnum.ACTIVE) {
+                return Result.error(new Exception("User is already active"));
+            }
+            if (user.getTimeResendEmail().isAfter(LocalDateTime.now())) {
+                return Result.error(new Exception("Please wait 30 minutes to resend OTP"));
+            }
+            String codeotp = String.format("%06d", new java.security.SecureRandom().nextInt(1000000));
+            user.setOtp(codeotp);
+            user.setOtpExpiresAt(LocalDateTime.now().plusMinutes(10));
+            user.setCountOtp(0);
+            user.setTimeResendEmail(LocalDateTime.now().plusMinutes(30));
+            UserProfile userProfilesave = userProfileRepo.save(user);
+            if (userProfilesave == null) {
+                return Result.error(new Exception("Failed to update user profile"));
+            }
+            String html = htmlOTp(userProfilesave.getEmail(), userProfilesave.getOtp(), 10);
+            EmailMessage message = EmailMessage.ofHtml(html, userProfilesave.getEmail(), "Verify OTP");
+            emailService.send(message);
+            return Result.success(user);
+        } catch (Exception e) {
+            return Result.error(e);
         }
-        Optional<UserRepresentation> userkeycloak = keycloakRepo.findByKeyEmail(request.email());
-        if (userkeycloak.isEmpty()) {
-            return Result.error(new Exception("Failed to update user"));
-        }
-        Map<String, List<String>> attributes = userkeycloak.get().getAttributes();
-        if (attributes == null) {
-            attributes = new HashMap<>();
-        }
-        attributes.put("phoneNumber", Collections.singletonList(request.phoneNumber()));
-        attributes.put("gender", Collections.singletonList(request.gender().name()));
-        userkeycloak.get().setAttributes(attributes);
-        UserRepresentation userkeycloakv2 = keycloakRepo.updatedOrSaveUser(userkeycloak.get());
-        if (userkeycloakv2 == null) {
-            return Result.error(new Exception("Failed to update user"));
-        }
-        return Result.success(usersave);
     }
 
     public String htmlOTp(String name, String otpCode, int expirationMinutes) {

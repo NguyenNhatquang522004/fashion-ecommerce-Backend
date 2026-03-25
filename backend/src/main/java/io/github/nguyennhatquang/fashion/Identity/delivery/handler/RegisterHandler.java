@@ -27,49 +27,84 @@ public class RegisterHandler {
         @PostMapping("/register/stepone")
         public ResponseEntity<SystemRes> RegisterStepOne(
                         @Validated @RequestBody RegisterRequest.RegisterStepOne request) {
-                Result<UserProfile, Exception> result = registerService.RegisterStepOne(request);
-                if (result.hasError()) {
-                        return ResponseEntity.badRequest().body(
-                                        SystemRes.builder().status("400").message(result.error().getMessage()).build());
+                try {
+                        Result<UserProfile, Exception> result = registerService.RegisterStepOne(request);
+                        if (result.hasError()) {
+                                return ResponseEntity.badRequest().body(
+                                                SystemRes.builder().status("400").message(result.error().getMessage()).build());
+                        }
+                        return ResponseEntity.ok().body(
+                                        SystemRes.builder().status("200").message("Register step one success").build());
+                } catch (Exception e) {
+                        return ResponseEntity.internalServerError().body(
+                                        SystemRes.builder().status("500").message(e.getMessage()).build());
                 }
-                return ResponseEntity.ok().body(
-                                SystemRes.builder().status("200").message("Register step one success").build());
         }
 
         @PostMapping("/register/steptwo")
         public ResponseEntity<SystemRes> RegisterStepTwo(
                         @Validated @RequestBody RegisterRequest.RegisterStepTwo request) {
-                Result<UserProfile, Exception> result = registerService.RegisterStepTwo(request);
-                if (result.hasError()) {
-                        return ResponseEntity.badRequest().body(
-                                        SystemRes.builder().status("400").message(result.error().getMessage()).build());
+                try {
+                        Result<UserProfile, Exception> result = registerService.RegisterStepTwo(request);
+                        if (result.hasError()) {
+                                return ResponseEntity.badRequest().body(
+                                                SystemRes.builder().status("400").message(result.error().getMessage()).build());
+                        }
+                        return ResponseEntity.ok().body(
+                                        SystemRes.builder().status("200").message("Register step two success").build());
+                } catch (Exception e) {
+                        return ResponseEntity.internalServerError().body(
+                                        SystemRes.builder().status("500").message(e.getMessage()).build());
                 }
-                return ResponseEntity.ok().body(
-                                SystemRes.builder().status("200").message("Register step two success").build());
         }
 
         @PostMapping("/register/stepthree")
         public ResponseEntity<SystemRes> RegisterStepThree(
                         @Validated @RequestBody RegisterRequest.RegisterStepThree request) {
-                Result<UserProfile, Exception> result = registerService.RegisterStepThree(request);
-                if (result.hasError()) {
-                        return ResponseEntity.badRequest().body(
-                                        SystemRes.builder().status("400").message(result.error().getMessage()).build());
+                try {
+                        Result<UserProfile, Exception> result = registerService.RegisterStepThree(request);
+                        if (result.hasError()) {
+                                return ResponseEntity.badRequest().body(
+                                                SystemRes.builder().status("400").message(result.error().getMessage()).build());
+                        }
+                        return ResponseEntity.ok().body(
+                                        SystemRes.builder().status("200").message("Register step three success").build());
+                } catch (Exception e) {
+                        return ResponseEntity.internalServerError().body(
+                                        SystemRes.builder().status("500").message(e.getMessage()).build());
                 }
-                return ResponseEntity.ok().body(
-                                SystemRes.builder().status("200").message("Register step three success").build());
         }
 
         @PostMapping("/register/stepfour")
         public ResponseEntity<SystemRes> RegisterStepFour(
                         @Validated @RequestBody RegisterRequest.RegisterStepFour request) {
-                Result<UserProfile, Exception> result = registerService.RegisterStepFour(request);
-                if (result.hasError()) {
-                        return ResponseEntity.badRequest().body(
-                                        SystemRes.builder().status("400").message(result.error().getMessage()).build());
+                try {
+                        Result<UserProfile, Exception> result = registerService.RegisterStepFour(request);
+                        if (result.hasError()) {
+                                return ResponseEntity.badRequest().body(
+                                                SystemRes.builder().status("400").message(result.error().getMessage()).build());
+                        }
+                        return ResponseEntity.ok().body(
+                                        SystemRes.builder().status("200").message("Register step four success").build());
+                } catch (Exception e) {
+                        return ResponseEntity.internalServerError().body(
+                                        SystemRes.builder().status("500").message(e.getMessage()).build());
                 }
-                return ResponseEntity.ok().body(
-                                SystemRes.builder().status("200").message("Register step four success").build());
         }
 
-}
+        @PostMapping("/register/resendotp")
+        public ResponseEntity<SystemRes> ResendOTP(@Validated @RequestBody RegisterRequest.RegisterStepOne request) {
+                try {
+                        Result<UserProfile, Exception> result = registerService.ResendOTP(request.email());
+                        if (result.hasError()) {
+                                return ResponseEntity.badRequest().body(
+                                                SystemRes.builder().status("400").message(result.error().getMessage()).build());
+                        }
+                        return ResponseEntity.ok().body(
+                                        SystemRes.builder().status("200").message("Resend OTP success").build());
+                } catch (Exception e) {
+                        return ResponseEntity.internalServerError().body(
+                                        SystemRes.builder().status("500").message(e.getMessage()).build());
+                }
+        }
+} 

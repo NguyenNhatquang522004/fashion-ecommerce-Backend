@@ -49,9 +49,7 @@ public class UpdatedUserProfileUseCase implements IUpdatedUserProfileUseCase {
                 return Result.error(new Exception("Update user profile failed"));
             }
             return Result.success(updated);
-        } catch (
-
-        Exception e) {
+        } catch (Exception e) {
             return Result.error(e);
         }
     }

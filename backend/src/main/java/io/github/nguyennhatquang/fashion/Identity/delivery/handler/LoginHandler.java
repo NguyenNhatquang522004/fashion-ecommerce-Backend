@@ -26,34 +26,39 @@ public class LoginHandler {
         @PostMapping("/login")
         public ResponseEntity<SystemRes> login(@Validated @RequestBody LoginRequest.Command request) {
 
-                // 1. Gọi UseCase để lấy AuthResponse từ Keycloak (Dùng cho cả Local & Social)
-                AuthResponse authResult = loginUseCase.execute(request);
+                try {
+                        // 1. Gọi UseCase để lấy AuthResponse từ Keycloak (Dùng cho cả Local & Social)
+                        AuthResponse authResult = loginUseCase.execute(request);
 
-                // 2. Tạo HttpOnly Cookie cho Access Token
-                ResponseCookie jwtCookie = ResponseCookie.from("access_token", authResult.accessToken())
-                                .httpOnly(true)
-                                .secure(false) // BẬT THÀNH TRUE KHI LÊN PRODUCTION (Bắt buộc HTTPS)
-                                .path("/") // Áp dụng cho toàn bộ domain
-                                .maxAge(authResult.expiresIn()) // Cookie tự hủy khi Token hết hạn
-                                .sameSite("Lax") // Chống tấn công CSRF
-                                .build();
+                        // 2. Tạo HttpOnly Cookie cho Access Token
+                        ResponseCookie jwtCookie = ResponseCookie.from("access_token", authResult.accessToken())
+                                        .httpOnly(true)
+                                        .secure(false) // BẬT THÀNH TRUE KHI LÊN PRODUCTION (Bắt buộc HTTPS)
+                                        .path("/") // Áp dụng cho toàn bộ domain
+                                        .maxAge(authResult.expiresIn()) // Cookie tự hủy khi Token hết hạn
+                                        .sameSite("Lax") // Chống tấn công CSRF
+                                        .build();
 
-                // 3. Tạo HttpOnly Cookie cho Refresh Token
-                // ĐIỂM CHUẨN KIẾN TRÚC: Path chỉ trỏ đến đúng API refresh,
-                // trình duyệt sẽ KHÔNG gửi refresh_token bừa bãi ở các API khác (như giỏ hàng,
-                // profile)
-                ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", authResult.refreshToken())
-                                .httpOnly(true)
-                                .secure(false) // BẬT TRUE TRÊN PROD
-                                .path("/api/v1/auth/refresh-token")
-                                .maxAge(authResult.refreshExpiresIn())
-                                .sameSite("Lax")
-                                .build();
+                        // 3. Tạo HttpOnly Cookie cho Refresh Token
+                        // ĐIỂM CHUẨN KIẾN TRÚC: Path chỉ trỏ đến đúng API refresh,
+                        // trình duyệt sẽ KHÔNG gửi refresh_token bừa bãi ở các API khác (như giỏ hàng,
+                        // profile)
+                        ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", authResult.refreshToken())
+                                        .httpOnly(true)
+                                        .secure(false) // BẬT TRUE TRÊN PROD
+                                        .path("/api/v1/auth/refresh-token")
+                                        .maxAge(authResult.refreshExpiresIn())
+                                        .sameSite("Lax")
+                                        .build();
 
-                // 4. Trả về Response cho Frontend (Chỉ trả về thông tin vô hại)
-                return ResponseEntity.ok()
-                                .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-                                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
-                                .body(SystemRes.builder().status("200").message("Login success").build());
+                        // 4. Trả về Response cho Frontend (Chỉ trả về thông tin vô hại)
+                        return ResponseEntity.ok()
+                                        .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                                        .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                                        .body(SystemRes.builder().status("200").message("Login success").build());
+                } catch (Exception e) {
+                        return ResponseEntity.internalServerError()
+                                        .body(SystemRes.builder().status("500").message(e.getMessage()).build());
+                }
         }
 }

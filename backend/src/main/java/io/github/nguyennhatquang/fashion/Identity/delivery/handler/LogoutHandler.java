@@ -26,34 +26,39 @@ public class LogoutHandler {
     public ResponseEntity<SystemRes> logout(
             @CookieValue(name = "refresh_token", required = true) String refreshToken) {
 
-        // 1. Gọi UseCase xử lý logout trên Keycloak
-        Result<Void, Exception> result = logoutUseCase.Logout(refreshToken);
+        try {
+            // 1. Gọi UseCase xử lý logout trên Keycloak
+            Result<Void, Exception> result = logoutUseCase.Logout(refreshToken);
 
-        if (result.hasError()) {
-            return ResponseEntity.badRequest().body(
-                    SystemRes.builder().status("400").message(result.error().getMessage()).build());
+            if (result.hasError()) {
+                return ResponseEntity.badRequest().body(
+                        SystemRes.builder().status("400").message(result.error().getMessage()).build());
+            }
+
+            // 2. Tạo lệnh xóa Access Token Cookie
+            ResponseCookie deleteJwtCookie = ResponseCookie.from("access_token", "")
+                    .httpOnly(true)
+                    .secure(false) // Đổi thành true nếu dùng HTTPS
+                    .path("/")
+                    .maxAge(0)
+                    .build();
+
+            // 3. Tạo lệnh xóa Refresh Token Cookie (Phải khớp Path)
+            ResponseCookie deleteRefreshCookie = ResponseCookie.from("refresh_token", "")
+                    .httpOnly(true)
+                    .secure(false)
+                    .path("/api/v1/auth/refresh-token")
+                    .maxAge(0)
+                    .build();
+
+            // 4. QUAN TRỌNG NHẤT: Đính kèm vào Header để trình duyệt thực thi xóa
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, deleteJwtCookie.toString())
+                    .header(HttpHeaders.SET_COOKIE, deleteRefreshCookie.toString())
+                    .body(SystemRes.builder().status("200").message("Logout success").build());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(
+                    SystemRes.builder().status("500").message(e.getMessage()).build());
         }
-
-        // 2. Tạo lệnh xóa Access Token Cookie
-        ResponseCookie deleteJwtCookie = ResponseCookie.from("access_token", "")
-                .httpOnly(true)
-                .secure(false) // Đổi thành true nếu dùng HTTPS
-                .path("/")
-                .maxAge(0)
-                .build();
-
-        // 3. Tạo lệnh xóa Refresh Token Cookie (Phải khớp Path)
-        ResponseCookie deleteRefreshCookie = ResponseCookie.from("refresh_token", "")
-                .httpOnly(true)
-                .secure(false)
-                .path("/api/v1/auth/refresh-token")
-                .maxAge(0)
-                .build();
-
-        // 4. QUAN TRỌNG NHẤT: Đính kèm vào Header để trình duyệt thực thi xóa
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, deleteJwtCookie.toString())
-                .header(HttpHeaders.SET_COOKIE, deleteRefreshCookie.toString())
-                .body(SystemRes.builder().status("200").message("Logout success").build());
     }
 }

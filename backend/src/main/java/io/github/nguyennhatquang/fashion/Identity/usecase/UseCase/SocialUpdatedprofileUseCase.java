@@ -20,22 +20,28 @@ public class SocialUpdatedprofileUseCase implements ISocialUpdatedprofileUseCase
 
     @Override
     public Result<UserProfile, Exception> execute(@AuthenticationPrincipal Jwt jwt, TypeLoginEnum typeLogin) {
-        String keycloakId = jwt.getSubject();
-        String email = jwt.getClaimAsString("email");
-        String fullName = jwt.getClaimAsString("name");
-        String avatarUrl = jwt.getClaimAsString("picture");
-        UserProfile user = new UserProfile();
-        user.setKeycloakId(keycloakId);
-        user.setEmail(email);
-        user.setFullName(fullName);
-        user.setAvatarUrl(avatarUrl);
-        user.setTypeLogin(typeLogin);
-        user.setStatus(ProfileStatusEnum.ACTIVE);
-        user.setLoyaltyTier(LoyaltyTierEnum.BRONZE);
-        UserProfile userProfilesave = userProfileRepo.save(user);
-        if (userProfilesave == null) {
-            return Result.error(new Exception("Failed to update user"));
+        try {
+            String keycloakId = jwt.getSubject();
+            String email = jwt.getClaimAsString("email");
+            String fullName = jwt.getClaimAsString("name");
+            String avatarUrl = jwt.getClaimAsString("picture");
+
+            UserProfile user = new UserProfile();
+            user.setKeycloakId(keycloakId);
+            user.setEmail(email);
+            user.setFullName(fullName);
+            user.setAvatarUrl(avatarUrl);
+            user.setTypeLogin(typeLogin);
+            user.setStatus(ProfileStatusEnum.ACTIVE);
+            user.setLoyaltyTier(LoyaltyTierEnum.BRONZE);
+
+            UserProfile userProfilesave = userProfileRepo.save(user);
+            if (userProfilesave == null) {
+                return Result.error(new Exception("Failed to update user"));
+            }
+            return Result.success(user);
+        } catch (Exception e) {
+            return Result.error(e);
         }
-        return Result.success(user);
     }
 }

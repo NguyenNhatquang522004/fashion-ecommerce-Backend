@@ -34,7 +34,6 @@ public class KeycloakJwtAuthenticationConverter implements Converter<Jwt, Abstra
         if (principalClaimName == null || principalClaimName.trim().isEmpty()) {
             principalClaimName = jwt.getSubject();
         }
-
         return new JwtAuthenticationToken(jwt, keycloakAuthorities, principalClaimName);
     }
 

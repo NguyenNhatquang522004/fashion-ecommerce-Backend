@@ -30,13 +30,12 @@ public class RefreshTokenHandler {
     public ResponseEntity<?> refreshToken(
             @CookieValue(name = "refresh_token", required = false) String refreshTokenFromCookie) {
 
-        // 1. Lấy token từ Cookie (Web) hoặc Body (Mobile)
-
-        if (refreshTokenFromCookie == null || refreshTokenFromCookie.isBlank()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing refresh token");
-        }
-
         try {
+            // 1. Lấy token từ Cookie (Web) hoặc Body (Mobile)
+            if (refreshTokenFromCookie == null || refreshTokenFromCookie.isBlank()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing refresh token");
+            }
+
             // 2. Gọi UseCase đổi token
             AuthResponse authResult = refreshTokenUseCase.execute(refreshTokenFromCookie);
 

@@ -1,0 +1,164 @@
+{
+  "info": {
+    "name": "Auth - Register API",
+    "description": "Postman Collection for Fashion E-commerce Registration Flow",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Register Step 1 - Send Email",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"testuser@example.com\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/auth/register/stepone",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "register",
+            "stepone"
+          ]
+        }
+      }
+    },
+    {
+      "name": "2. Register Step 2 - Verify OTP",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"testuser@example.com\",\n  \"otp\": \"123456\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/auth/register/steptwo",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "register",
+            "steptwo"
+          ]
+        }
+      }
+    },
+    {
+      "name": "3. Register Step 3 - Account Security",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"testuser@example.com\",\n  \"username\": \"testuser\",\n  \"password\": \"Password@123\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/auth/register/stepthree",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "register",
+            "stepthree"
+          ]
+        }
+      }
+    },
+    {
+      "name": "4. Register Step 4 - Personal Information",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"testuser@example.com\",\n  \"phoneNumber\": \"0987654321\",\n  \"address\": \"123 Nguyen Trai, Ha Noi\",\n  \"gender\": \"MALE\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/auth/register/stepfour",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "register",
+            "stepfour"
+          ]
+        }
+      }
+    },
+    {
+      "name": "5. Resend OTP",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"testuser@example.com\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/auth/register/resendotp",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "register",
+            "resendotp"
+          ]
+        }
+      }
+    }
+  ]
+}

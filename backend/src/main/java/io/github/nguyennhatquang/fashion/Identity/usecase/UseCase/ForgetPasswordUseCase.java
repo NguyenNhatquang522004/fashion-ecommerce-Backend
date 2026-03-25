@@ -19,16 +19,19 @@ public class ForgetPasswordUseCase implements IForgetPasswordUseCase {
 
     @Override
     public Result<Void, Exception> ForgetPassword(ForgetPasswordRequest.ForgetPasswordRequestOne request) {
-        // TODO Auto-generated method stub
-        UserProfile user = userProfileRepo.findbyEmail(request.email());
-        if (user == null) {
-            return Result.error(new Exception("User not found"));
+        try {
+            UserProfile user = userProfileRepo.findbyEmail(request.email());
+            if (user == null) {
+                return Result.error(new Exception("User not found"));
+            }
+            if (user.getTypeLogin() != TypeLoginEnum.Local) {
+                return Result.error(new Exception("user login social not support"));
+            }
+            keycloakRepo.sendResetPasswordEmail(user.getKeycloakId());
+            return Result.success(null);
+        } catch (Exception e) {
+            return Result.error(e);
         }
-        if (user.getTypeLogin() != TypeLoginEnum.Local) {
-            return Result.error(new Exception("user login social not support"));
-        }
-        keycloakRepo.sendResetPasswordEmail(user.getKeycloakId());
-        return Result.success(null);
     }
 
 }
