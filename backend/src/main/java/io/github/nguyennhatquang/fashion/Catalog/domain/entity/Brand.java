@@ -5,6 +5,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -20,13 +21,13 @@ import lombok.Setter;
 import java.time.Instant;
 
 @Document(collection = "brands")
+@CompoundIndex(name = "snapshot_idx", def = "{'created_at': -1, '_id': -1}")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Brand {
-
     @Id
     private String id;
 
@@ -53,7 +54,7 @@ public class Brand {
     // --- Soft Delete (Tương thích 100% với BaseMongoRepository đã tạo) ---
     @Field("is_deleted")
     @Builder.Default
-    private Boolean isDeleted = false;  
+    private Boolean isDeleted = false;
 
     // --- Spring Data Auditing (Tự động cập nhật ngày tháng & user thực hiện) ---
     @CreatedDate
