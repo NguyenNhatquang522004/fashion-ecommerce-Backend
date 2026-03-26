@@ -1,11 +1,15 @@
 package io.github.nguyennhatquang.fashion.Catalog.delivery.Mapper;
 
+import java.util.List;
+import java.util.Locale.Category;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import io.github.nguyennhatquang.fashion.Catalog.delivery.Dto.Brand.BrandResponse;
+import io.github.nguyennhatquang.fashion.Catalog.delivery.Dto.Category.CategoryResponse;
 import io.github.nguyennhatquang.fashion.Catalog.delivery.Dto.Brand.BrandRequest.BrandCreateRequest;
 import io.github.nguyennhatquang.fashion.Catalog.delivery.Dto.Brand.BrandRequest.BrandUpdateRequest;
 import io.github.nguyennhatquang.fashion.Catalog.domain.entity.Brand;
@@ -36,4 +40,6 @@ public interface BrandMapper {
 
     // 3. Map từ Entity ra Response
     BrandResponse toResponse(Brand brand);
+
+     List<BrandResponse> toResponseList(List<Brand> brands);
 }

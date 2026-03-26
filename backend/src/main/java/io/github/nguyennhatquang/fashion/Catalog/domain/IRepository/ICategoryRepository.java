@@ -2,7 +2,13 @@ package io.github.nguyennhatquang.fashion.Catalog.domain.IRepository;
 
 import java.util.List;
 import java.util.Optional;
+
+
 import io.github.nguyennhatquang.fashion.Catalog.domain.entity.Category;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.request.PanigationRequest;
+import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
+import io.github.nguyennhatquang.fashion.common.response.PanigationResponse;
 
 public interface ICategoryRepository {
     Category save(Category category);
@@ -32,5 +38,9 @@ public interface ICategoryRepository {
     Optional<List<Category>> findByParentId(String parentId);
 
     List<Category> findAll();
+
+    ExactPageResponse<Category> getCategoriesExactPage(ExactPageRequest request);
+
+    PanigationResponse<Category> getCategoriesCursor(PanigationRequest request);
 
 }
