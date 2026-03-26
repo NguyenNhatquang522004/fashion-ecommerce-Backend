@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.github.nguyennhatquang.fashion.Identity.delivery.dto.login.LoginRequest;
-import io.github.nguyennhatquang.fashion.Identity.usecase.UseCase.LoginUseCase;
+import io.github.nguyennhatquang.fashion.Identity.usecase.AdapterUseCase.LoginUseCase;
 import io.github.nguyennhatquang.fashion.common.infrastructure.auth.AuthResponse;
 import io.github.nguyennhatquang.fashion.common.response.SystemRes;
 import lombok.RequiredArgsConstructor;

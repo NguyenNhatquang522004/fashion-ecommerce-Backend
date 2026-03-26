@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.github.nguyennhatquang.fashion.Identity.usecase.AdapterUseCase.RefreshTokenUseCase;
 import io.github.nguyennhatquang.fashion.Identity.usecase.IUseCase.IRefreshTokenUseCase;
-import io.github.nguyennhatquang.fashion.Identity.usecase.UseCase.RefreshTokenUseCase;
 import io.github.nguyennhatquang.fashion.common.infrastructure.auth.AuthResponse;
 import io.github.nguyennhatquang.fashion.common.response.SystemRes;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;

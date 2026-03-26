@@ -16,8 +16,9 @@ import java.util.Collections;
  * package-info.java của module common đã expose package này.
  */
 @Configuration
-@EnableMongoAuditing // Best Practice: Tự động điền @CreatedDate, @LastModifiedDate cho toàn bộ hệ
-                     // thống
+@EnableMongoAuditing(auditorAwareRef = "keycloakAuditorAware") // Best Practice: Tự động điền @CreatedDate,
+                                                               // @LastModifiedDate cho toàn bộ hệ
+// thống
 public class MongoConfig {
     // @Transactional("mongoTransactionManager")
     /**

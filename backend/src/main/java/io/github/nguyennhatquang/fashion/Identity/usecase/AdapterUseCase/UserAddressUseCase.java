@@ -1,4 +1,4 @@
-package io.github.nguyennhatquang.fashion.Identity.usecase.UseCase;
+package io.github.nguyennhatquang.fashion.Identity.usecase.AdapterUseCase;
 
 import java.util.Optional;
 import java.util.UUID;

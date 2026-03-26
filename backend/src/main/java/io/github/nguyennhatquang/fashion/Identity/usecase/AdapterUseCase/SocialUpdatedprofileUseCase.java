@@ -1,4 +1,4 @@
-package io.github.nguyennhatquang.fashion.Identity.usecase.UseCase;
+package io.github.nguyennhatquang.fashion.Identity.usecase.AdapterUseCase;
 
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
