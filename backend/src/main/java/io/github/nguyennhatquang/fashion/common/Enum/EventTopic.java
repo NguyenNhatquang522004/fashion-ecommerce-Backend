@@ -4,27 +4,32 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Represents Kafka topic names used for inter-service messaging (pre-existing enum).
+ * Represents Kafka topic names used for inter-service messaging (pre-existing
+ * enum).
  * JSON wire values follow the kebab-case topic naming convention.
  *
  * Examples: "order-created", "payment-processed", "inventory-reserved", etc.
  */
 public enum EventTopic {
 
-    ORDER_CREATED("order-created"),
-    PAYMENT_PROCESSED("payment-processed"),
-    PAYMENT_FAILED("payment-failed"),
-    INVENTORY_RESERVED("inventory-reserved"),
-    INVENTORY_RELEASED("inventory-released"),
-    ORDER_COMPLETED("order-completed"),
-    ORDER_CANCELLED("order-cancelled"),
-    NOTIFICATION_SEND("notification-send"),
-    LOYALTY_POINTS_EARNED("loyalty-points-earned");
+    ORDER_CREATED("order-created", 3, 1),
+    PAYMENT_PROCESSED("payment-processed", 3, 1),
+    PAYMENT_FAILED("payment-failed", 3, 1),
+    INVENTORY_RESERVED("inventory-reserved", 3, 1),
+    INVENTORY_RELEASED("inventory-released", 3, 1),
+    ORDER_COMPLETED("order-completed", 3, 1),
+    ORDER_CANCELLED("order-cancelled", 3, 1),
+    NOTIFICATION_SEND("notification-send", 3, 1),
+    LOYALTY_POINTS_EARNED("loyalty-points-earned", 3, 1);
 
     private final String value;
+    private final int partitions;
+    private final int replicas;
 
-    EventTopic(String value) {
+    EventTopic(String value, int partitions, int replicas) {
         this.value = value;
+        this.partitions = partitions;
+        this.replicas = replicas;
     }
 
     @JsonValue
@@ -32,11 +37,21 @@ public enum EventTopic {
         return value;
     }
 
+    public int getPartitions() {
+        return partitions;
+    }
+
+    public int getReplicas() {
+        return replicas;
+    }
+
     @JsonCreator
     public static EventTopic fromValue(String value) {
-        if (value == null || value.isBlank()) return null;
+        if (value == null || value.isBlank())
+            return null;
         for (EventTopic e : values()) {
-            if (e.value.equalsIgnoreCase(value)) return e;
+            if (e.value.equalsIgnoreCase(value))
+                return e;
         }
         throw new IllegalArgumentException("Invalid value for EventTopic: '" + value + "'");
     }

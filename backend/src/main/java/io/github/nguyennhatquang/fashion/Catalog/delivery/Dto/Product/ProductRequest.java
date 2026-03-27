@@ -18,17 +18,10 @@ public class ProductRequest {
 
     public record ProductCreateRequest(
             @NotBlank(message = "Tên sản phẩm không được để trống") String name,
-
-            @NotBlank(message = "Slug không được để trống") String slug,
-
             String brandId, // Chỉ nhận ID, không nhận Tên
-
             @NotEmpty(message = "Sản phẩm phải thuộc ít nhất 1 danh mục") List<String> categoryIds,
-
             String description,
-
             @NotNull(message = "Giá gốc không được để trống") @DecimalMin(value = "0.0", inclusive = false, message = "Giá sản phẩm phải lớn hơn 0") BigDecimal basePrice,
-
             // Sử dụng các Sub-DTO ngay bên dưới
             @Valid List<AttributeRequest> attributes,
 

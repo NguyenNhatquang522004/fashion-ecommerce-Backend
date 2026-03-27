@@ -1,11 +1,17 @@
 package io.github.nguyennhatquang.fashion.common.kafka;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.ConsumerFactory;
+import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
@@ -13,6 +19,7 @@ import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.ExponentialBackOffWithMaxRetries;
 import org.springframework.messaging.converter.MessageConversionException;
 
+import io.github.nguyennhatquang.fashion.common.Enum.EventTopic;
 // Import Custom Exception của dự án bạn
 import io.github.nguyennhatquang.fashion.common.errors.UnprocessablePayloadException;
 
@@ -82,8 +89,34 @@ public class KafkaEventBusConfig {
         factory.setConsumerFactory(consumerFactory);
         factory.setCommonErrorHandler(errorHandler);
         factory.setBatchListener(true);
-        // Bắt buộc: Tự commit offset khi hoàn thành hoặc khi đã tự xử lý xong lỗi
+        // Bắt buộc: Tự commit offsetkhi hoàn thành hoặc khi đã tự xử lý xong lỗi 
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         return factory;
+    }
+
+    @Bean
+    public KafkaAdmin.NewTopics autoCreateTopics() {
+        List<NewTopic> newTopics = new ArrayList<>();
+
+        for (EventTopic eventTopic : EventTopic.values()) {
+            String topicName = eventTopic.getValue();
+
+            // 4.1 Tạo Topic Chính
+            newTopics.add(
+                    TopicBuilder.name(topicName)
+                            .partitions(eventTopic.getPartitions())
+                            .replicas(eventTopic.getReplicas())
+                            .build());
+
+            // 4.2 TẠO LUÔN TOPIC DLT (Bắt buộc để DLQ Publish Recoverer hoạt động trơn tru)
+            newTopics.add(
+                    TopicBuilder.name(topicName + ".DLT")
+                            .partitions(eventTopic.getPartitions())
+                            .replicas(eventTopic.getReplicas())
+                            .build());
+        }
+
+        // Chuyển List thành Array và trả về cho KafkaAdmin xử lý
+        return new KafkaAdmin.NewTopics(newTopics.toArray(new NewTopic[0]));
     }
 }

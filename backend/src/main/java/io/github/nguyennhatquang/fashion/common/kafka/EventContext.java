@@ -14,6 +14,11 @@ public record EventContext(
         return new EventContext(id, userId, id, 5000L);
     }
 
+    public static EventContext generate(String userId, long timeoutMs) {
+        String id = java.util.UUID.randomUUID().toString();
+        return new EventContext(id, userId, id, timeoutMs);
+    }
+
     // Kiểm tra xem đã hết giờ chưa (Giống ctx.Err() trong Go)
     public boolean isExpired() {
         return java.time.Instant.now().isAfter(java.time.Instant.ofEpochMilli(timeoutMs));

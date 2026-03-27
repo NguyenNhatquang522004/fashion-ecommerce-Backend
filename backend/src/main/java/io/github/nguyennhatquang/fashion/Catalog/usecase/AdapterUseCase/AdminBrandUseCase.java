@@ -10,6 +10,7 @@ import io.github.nguyennhatquang.fashion.Catalog.delivery.Mapper.BrandMapper;
 import io.github.nguyennhatquang.fashion.Catalog.domain.IRepository.IBrandRepository;
 import io.github.nguyennhatquang.fashion.Catalog.domain.entity.Brand;
 import io.github.nguyennhatquang.fashion.Catalog.usecase.IUseCase.IAdminBrandUseCase;
+import io.github.nguyennhatquang.fashion.Catalog.utils.SlugHepler;
 import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
 import io.github.nguyennhatquang.fashion.common.request.PanigationRequest;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
@@ -27,6 +28,7 @@ public class AdminBrandUseCase implements IAdminBrandUseCase {
     public Result<Brand, Exception> createBrand(BrandCreateRequest request) {
         try {
             Brand brand = brandMapper.toEntity(request);
+            brand.setSlug(SlugHepler.generateUniqueSlug(brand.getName()));
             brandRepository.save(brand);
             return Result.success(brand);
         } catch (Exception e) {
@@ -42,6 +44,7 @@ public class AdminBrandUseCase implements IAdminBrandUseCase {
                 return Result.error(new Exception("Brand not found"));
             }
             brandMapper.updateEntityFromRequest(request, brand);
+            brand.setSlug(SlugHepler.generateUniqueSlug(brand.getName()));
             brandRepository.save(brand);
             return Result.success(brand);
         } catch (Exception e) {
@@ -52,7 +55,6 @@ public class AdminBrandUseCase implements IAdminBrandUseCase {
     @Override
     public Result<Void, Exception> deleteBrand(String id) {
         try {
-
             brandRepository.softDeleteById(id);
             return Result.success(null);
         } catch (Exception e) {
