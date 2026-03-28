@@ -1,5 +1,6 @@
 package io.github.nguyennhatquang.fashion.Catalog.usecase.AdapterUseCase;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -9,8 +10,10 @@ import io.github.nguyennhatquang.fashion.Catalog.delivery.Dto.Product.ProductReq
 import io.github.nguyennhatquang.fashion.Catalog.delivery.Mapper.ProductMapper;
 import io.github.nguyennhatquang.fashion.Catalog.domain.IRepository.IBrandRepository;
 import io.github.nguyennhatquang.fashion.Catalog.domain.IRepository.IProductRepository;
+import io.github.nguyennhatquang.fashion.Catalog.domain.IRepository.ISkuVariantRepository;
 import io.github.nguyennhatquang.fashion.Catalog.domain.entity.Brand;
 import io.github.nguyennhatquang.fashion.Catalog.domain.entity.Product;
+import io.github.nguyennhatquang.fashion.Catalog.domain.entity.SkuVariant;
 import io.github.nguyennhatquang.fashion.Catalog.usecase.IUseCase.IAdminProductUseCase;
 import io.github.nguyennhatquang.fashion.Catalog.utils.SlugHepler;
 import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
@@ -26,6 +29,7 @@ public class AdminProductUseCase implements IAdminProductUseCase {
     private final IBrandRepository brandRepository;
     private final IProductRepository productRepository;
     private final ProductMapper mapper;
+    private final ISkuVariantRepository skuVariantRepository;
 
     @Override
     public Result<Product, Exception> createProduct(ProductCreateRequest request) {
@@ -59,20 +63,13 @@ public class AdminProductUseCase implements IAdminProductUseCase {
     }
 
     @Override
-    public Result<Product, Exception> deleteProductBySlug(String slug) {
-        // TODO Auto-generated method stub
-        try {
-            productRepository.softDeleteBySlug(slug);
-            return Result.success(null);
-        } catch (Exception e) {
-            return Result.error(e);
-        }
-    }
-
-    @Override
     public Result<Product, Exception> deleteProductById(String Id) {
         // TODO Auto-generated method stub
         try {
+            List<SkuVariant> skuVariants = skuVariantRepository.findByProductId(Id);
+            if (skuVariants.size() > 0) {
+                return Result.error(new Exception("Product has sku variants"));
+            }
             productRepository.softDeleteById(Id);
             return Result.success(null);
         } catch (Exception e) {

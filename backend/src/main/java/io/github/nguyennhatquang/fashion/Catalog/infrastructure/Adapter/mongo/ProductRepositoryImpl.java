@@ -232,4 +232,14 @@ public class ProductRepositoryImpl implements IProductRepository {
                 .data(data)
                 .build();
     }
+
+    @Override
+    public List<Product> findProductsWithExactlyOneSpecificBrand(String brandId) {
+        return productMongoRepository.findProductsWithExactlyOneSpecificBrand(brandId);
+    }
+
+    @Override
+    public List<Product> findProductsWithExactlyOneSpecificCategory(String categoryId) {
+        return productMongoRepository.findProductsWithExactlyOneSpecificCategory(categoryId);
+    }
 }

@@ -21,10 +21,13 @@ public interface ProductMongoRepository extends MongoRepository<Product, String>
 
     List<Product> findByCategoryIdsContainingAndIsDeletedFalse(String categoryId);
 
-    Optional<Product> findByBrandId(String brandId);
+    @Query("{ 'brand_id': ?0, 'is_deleted': false }")
+    List<Product> findProductsWithExactlyOneSpecificBrand(String brandId);
 
+    @Query("{ 'category_ids': [ ?0 ], 'is_deleted': false }")
+    List<Product> findProductsWithExactlyOneSpecificCategory(String categoryId);
 
-        @Query(value = "{ 'created_at' : { $lte: ?0 } }", count = true)
+    @Query(value = "{ 'created_at' : { $lte: ?0 } }", count = true)
     long countBySnapshot(Instant snapshotTime);
 
     // 2. Bước A: Lấy ID siêu tốc (Covered Query). fields = "{ '_id': 1 }" là chìa

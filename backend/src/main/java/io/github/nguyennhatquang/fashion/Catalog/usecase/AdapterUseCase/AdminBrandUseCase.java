@@ -8,7 +8,9 @@ import io.github.nguyennhatquang.fashion.Catalog.delivery.Dto.Brand.BrandRequest
 import io.github.nguyennhatquang.fashion.Catalog.delivery.Dto.Brand.BrandRequest.BrandUpdateRequest;
 import io.github.nguyennhatquang.fashion.Catalog.delivery.Mapper.BrandMapper;
 import io.github.nguyennhatquang.fashion.Catalog.domain.IRepository.IBrandRepository;
+import io.github.nguyennhatquang.fashion.Catalog.domain.IRepository.IProductRepository;
 import io.github.nguyennhatquang.fashion.Catalog.domain.entity.Brand;
+import io.github.nguyennhatquang.fashion.Catalog.domain.entity.Product;
 import io.github.nguyennhatquang.fashion.Catalog.usecase.IUseCase.IAdminBrandUseCase;
 import io.github.nguyennhatquang.fashion.Catalog.utils.SlugHepler;
 import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
@@ -23,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class AdminBrandUseCase implements IAdminBrandUseCase {
     private final IBrandRepository brandRepository;
     private final BrandMapper brandMapper;
+    private final IProductRepository productRepository;
 
     @Override
     public Result<Brand, Exception> createBrand(BrandCreateRequest request) {
@@ -55,6 +58,10 @@ public class AdminBrandUseCase implements IAdminBrandUseCase {
     @Override
     public Result<Void, Exception> deleteBrand(String id) {
         try {
+            List<Product> products = productRepository.findProductsWithExactlyOneSpecificBrand(id);
+            if (products.size() > 0) {
+                return Result.error(new Exception("Brand has products"));
+            }
             brandRepository.softDeleteById(id);
             return Result.success(null);
         } catch (Exception e) {
@@ -65,6 +72,10 @@ public class AdminBrandUseCase implements IAdminBrandUseCase {
     @Override
     public Result<Brand, Exception> getBrandById(String id) {
         try {
+            List<Product> products = productRepository.findProductsWithExactlyOneSpecificBrand(id);
+            if (products.size() > 0) {
+                return Result.error(new Exception("Brand has products"));
+            }
             Brand brand = brandRepository.findById(id).orElse(null);
             if (brand == null) {
                 return Result.error(new Exception("Brand not found"));

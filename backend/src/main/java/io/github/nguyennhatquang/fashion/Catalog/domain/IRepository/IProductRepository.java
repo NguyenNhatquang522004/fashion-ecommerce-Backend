@@ -40,6 +40,10 @@ public interface IProductRepository {
 
     List<Product> findAll();
 
+    List<Product> findProductsWithExactlyOneSpecificBrand(String brandId);
+
+    List<Product> findProductsWithExactlyOneSpecificCategory(String categoryId);
+
     ExactPageResponse<Product> getProductsExactPage(ExactPageRequest request);
 
     PanigationResponse<Product> getProductsCursor(PanigationRequest request);

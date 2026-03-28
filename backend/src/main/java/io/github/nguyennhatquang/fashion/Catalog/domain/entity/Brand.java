@@ -32,6 +32,7 @@ public class Brand {
     private String id;
 
     @NotBlank(message = "Tên thương hiệu không được để trống")
+
     @Field("name")
     private String name;
 

@@ -14,7 +14,7 @@ public interface IAdminProductUseCase {
 
     Result<Product, Exception> updateProduct(String Id, ProductUpdateRequest request);
 
-    Result<Product, Exception> deleteProductBySlug(String slug);
+
 
     Result<Product, Exception> deleteProductById(String Id);
 
