@@ -12,6 +12,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
  */
 public enum EventTopic {
 
+    BRAND_DELETE("brand-delete", 3, 1),
+
     ORDER_CREATED("order-created", 3, 1),
     PAYMENT_PROCESSED("payment-processed", 3, 1),
     PAYMENT_FAILED("payment-failed", 3, 1),
@@ -21,6 +23,13 @@ public enum EventTopic {
     ORDER_CANCELLED("order-cancelled", 3, 1),
     NOTIFICATION_SEND("notification-send", 3, 1),
     LOYALTY_POINTS_EARNED("loyalty-points-earned", 3, 1);
+
+    public static class TopicName {
+        public static final String BRAND_DELETE = "brand-delete";
+        public static final String ORDER_CREATED = "order-created";
+        public static final String PAYMENT_PROCESSED = "payment-processed";
+        // ...
+    }
 
     private final String value;
     private final int partitions;

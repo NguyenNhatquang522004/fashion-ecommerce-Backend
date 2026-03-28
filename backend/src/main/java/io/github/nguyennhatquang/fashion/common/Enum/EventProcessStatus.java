@@ -11,28 +11,17 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * existing Kafka consumers that depend on this format.
  */
 public enum EventProcessStatus {
+    SUCCESS, // Đã xử lý thành công -> Bỏ qua
+    INVALID_PAYLOAD, // (Cũ: ERROR_A) Lỗi cấu trúc JSON, thiếu Data -> Nằm trong DLQ -> Bỏ qua
+    TRANSIENT_ERROR; // (Cũ: ERROR_B) Lỗi mạng, DB, Timeout tạm thời -> Cho phép Kafka Retry
 
-    PENDING("PENDING"),
-    PROCESSED("PROCESSED"),
-    FAILED("FAILED");
-
-    private final String value;
-
-    EventProcessStatus(String value) {
-        this.value = value;
-    }
-
-    @JsonValue
-    public String getValue() {
-        return value;
-    }
-
-    @JsonCreator
-    public static EventProcessStatus fromValue(String value) {
-        if (value == null || value.isBlank()) return null;
-        for (EventProcessStatus e : values()) {
-            if (e.value.equalsIgnoreCase(value)) return e;
+    /**
+     * Kiểm tra trạng thái chốt sổ (Không bao giờ xử lý lại nữa)
+     */
+    public static boolean isFinalStatus(String statusStr) {
+        if (statusStr == null || statusStr.isBlank()) {
+            return false;
         }
-        throw new IllegalArgumentException("Invalid value for EventProcessStatus: '" + value + "'");
+        return SUCCESS.name().equals(statusStr) || INVALID_PAYLOAD.name().equals(statusStr);
     }
 }
