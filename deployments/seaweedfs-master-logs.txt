@@ -1,0 +1,23 @@
+I0328 13:08:40.609594 file_util.go:28 Folder /data Permission: -rwxr-xr-x
+I0328 13:08:40.610142 master.go:332 current: seaweedfs-master:9333 peers:
+I0328 13:08:41.071400 master_server.go:149 Volume Size Limit is 1024 MB
+I0328 13:08:41.252286 master.go:192 Start Seaweed Master 30GB 4.16 d4d2e511e at seaweedfs-master:9333
+I0328 13:08:41.807934 raft_server.go:142 Starting RaftServer with seaweedfs-master:9333
+I0328 13:08:41.963091 raft_server.go:191 current cluster leader: 
+I0328 13:08:41.963366 master_server.go:247 [seaweedfs-master:9333.19333]  - is the leader.
+I0328 13:08:41.969473 master.go:251 Start Seaweed Master 30GB 4.16 d4d2e511e grpc server at seaweedfs-master:19333
+I0328 13:08:41.969940 masterclient.go:440 .master masterClient bootstraps with masters {[seaweedfs-master:9333.19333] <nil>}
+I0328 13:08:42.069210 masterclient.go:216 .master masterClient gRPC stream established to seaweedfs-master:9333 in 99.178053ms
+I0328 13:08:43.470899 masterclient.go:487 No existing leader found!
+I0328 13:08:43.487071 raft_server.go:213 Initializing new cluster
+I0328 13:08:43.487206 master_server.go:212 leader change event:  => seaweedfs-master:9333.19333
+I0328 13:08:43.487233 master_server.go:215 [seaweedfs-master:9333.19333] seaweedfs-master:9333.19333 becomes leader.
+I0328 13:08:43.626706 masterclient.go:324 updateVidMap ignore short heartbeat: volume_location:{leader:"seaweedfs-master:9333.19333"}
+I0328 13:08:43.626959 masterclient.go:268 .master masterClient failed to receive from seaweedfs-master:9333: EOF
+I0328 13:08:43.762836 cluster_commands.go:40 TopologyId generated and applied on leader: 767860f3-c320-4046-be43-9580a2ba6063
+I0328 13:08:43.796545 raft_common.go:42 TopologyId generated: 767860f3-c320-4046-be43-9580a2ba6063
+I0328 13:08:44.628223 masterclient.go:454 .master masterClient reconnection attempt #1
+I0328 13:08:44.629670 masterclient.go:216 .master masterClient gRPC stream established to seaweedfs-master:9333 in 1.387173ms
+I0328 13:08:44.629891 master_grpc_server.go:406 + client .master@seaweedfs-master:9333.19333
+I0328 13:08:44.630398 masterclient.go:324 updateVidMap ignore short heartbeat: volume_location:{leader:"seaweedfs-master:9333.19333"}
+I0328 13:08:44.652191 masterclient.go:291 + master@seaweedfs-master:9333 noticed .master seaweedfs-master:9333.19333

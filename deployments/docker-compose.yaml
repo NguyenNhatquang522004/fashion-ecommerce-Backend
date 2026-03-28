@@ -96,7 +96,7 @@ services:
     container_name: neo4j
     restart: unless-stopped
     environment:
-      NEO4J_AUTH: neo4j/secret
+      NEO4J_AUTH: neo4j/password123
       NEO4J_PLUGINS: '["apoc"]'
       NEO4J_dbms_memory_heap_initial__size: 256m
       NEO4J_dbms_memory_heap_max__size: 512m
@@ -275,7 +275,7 @@ services:
       - zookeeper-data:/var/lib/zookeeper/data
       - zookeeper-log:/var/lib/zookeeper/log
     healthcheck:
-      test: ["CMD", "bash", "-c", "echo ruok | nc localhost 2181 | grep imok"]
+      test: ["CMD", "bash", "-c", "echo srvr | nc localhost 2181 | grep Mode"]
       interval: 20s
       timeout: 10s
       retries: 5
@@ -436,7 +436,7 @@ services:
     volumes:
       - seaweedfs-master-data:/data
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:9333/cluster/status || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://seaweedfs-master:9333/cluster/status || exit 1"]
       interval: 20s
       timeout: 10s
       retries: 5
@@ -473,7 +473,7 @@ services:
     volumes:  
       - seaweedfs-filer-data:/data
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8888/ || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://seaweedfs-filer:8888/ || exit 1"]
       interval: 20s
       timeout: 10s
       retries: 5
@@ -492,7 +492,7 @@ services:
     networks:
       - fashion-ecommerce-network
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8333/ || exit 1"]
+      test: ["CMD-SHELL", "nc -z seaweedfs-s3 8333 || exit 1"]
       interval: 20s
       timeout: 10s
       retries: 5
