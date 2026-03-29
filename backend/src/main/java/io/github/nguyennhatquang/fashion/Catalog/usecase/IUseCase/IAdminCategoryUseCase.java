@@ -26,5 +26,5 @@ public interface IAdminCategoryUseCase {
 
     Result<ExactPageResponse<Category>, Exception> GetExactPageResponse(ExactPageRequest request);
 
-    Result<PanigationResponse<Category>, Exception> getBrandsCursor(PanigationRequest request);
+    Result<PanigationResponse<Category>, Exception> getCategorysCursor(PanigationRequest request);
 }

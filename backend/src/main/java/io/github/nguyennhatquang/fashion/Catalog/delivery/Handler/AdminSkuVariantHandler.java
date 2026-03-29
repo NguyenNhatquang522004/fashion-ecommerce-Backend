@@ -3,26 +3,21 @@ package io.github.nguyennhatquang.fashion.Catalog.delivery.Handler;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.github.nguyennhatquang.fashion.Catalog.delivery.Dto.Brand.BrandResponse;
-import io.github.nguyennhatquang.fashion.Catalog.delivery.Dto.Brand.BrandRequest.BrandCreateRequest;
-import io.github.nguyennhatquang.fashion.Catalog.delivery.Dto.Brand.BrandRequest.BrandUpdateRequest;
-import io.github.nguyennhatquang.fashion.Catalog.delivery.Mapper.BrandMapper;
-import io.github.nguyennhatquang.fashion.Catalog.domain.entity.Brand;
-import io.github.nguyennhatquang.fashion.Catalog.usecase.IUseCase.IAdminBrandUseCase;
-import io.github.nguyennhatquang.fashion.common.kafka.EventContext;
+import io.github.nguyennhatquang.fashion.Catalog.delivery.Dto.SkuVariant.SkuVariantResponse;
+import io.github.nguyennhatquang.fashion.Catalog.delivery.Dto.SkuVariant.SkuVariantRequest.SkuVariantCreateRequest;
+import io.github.nguyennhatquang.fashion.Catalog.delivery.Dto.SkuVariant.SkuVariantRequest.SkuVariantUpdateRequest;
+import io.github.nguyennhatquang.fashion.Catalog.delivery.Mapper.SkuVariantMapper;
+import io.github.nguyennhatquang.fashion.Catalog.domain.entity.SkuVariant;
+import io.github.nguyennhatquang.fashion.Catalog.usecase.IUseCase.IAdminSkuVariantUseCase;
 import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
 import io.github.nguyennhatquang.fashion.common.request.PanigationRequest;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
@@ -31,26 +26,28 @@ import io.github.nguyennhatquang.fashion.common.response.Result;
 import io.github.nguyennhatquang.fashion.common.response.SystemRes;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @RestController
-@RequestMapping("/api/admin/brands")
+@RequestMapping("/api/admin/sku-variants")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
-public class AdminBrandHandler {
+public class AdminSkuVariantHandler {
 
-    private final IAdminBrandUseCase adminBrandUseCase;
-    private final BrandMapper brandMapper;
+    private final IAdminSkuVariantUseCase adminSkuVariantUseCase;
+    private final SkuVariantMapper skuVariantMapper;
 
     @PostMapping("/create")
-    public ResponseEntity<SystemRes> createBrand(@Validated @RequestBody BrandCreateRequest request) {
+    public ResponseEntity<SystemRes> createSkuVariant(@Validated @RequestBody SkuVariantCreateRequest request) {
         try {
-            Result<Brand, Exception> result = adminBrandUseCase.createBrand(request);
+            Result<SkuVariant, Exception> result = adminSkuVariantUseCase.createSkuVariant(request);
             if (result.hasError()) {
                 return ResponseEntity.badRequest().body(
                         SystemRes.builder().status("400").message(result.error().getMessage()).data(null).build());
             }
-            BrandResponse response = brandMapper.toResponse(result.data());
+            SkuVariantResponse response = skuVariantMapper.toResponse(result.data());
             return ResponseEntity.ok().body(
-                    SystemRes.builder().status("200").message("Create brand success").data(response).build());
+                    SystemRes.builder().status("200").message("Create sku variant success").data(response).build());
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(SystemRes.builder().status("400").message(e.getMessage()).data(null).build());
@@ -58,17 +55,17 @@ public class AdminBrandHandler {
     }
 
     @PostMapping("/update/{id}")
-    public ResponseEntity<SystemRes> updateBrand(@PathVariable("id") String id,
-            @Validated @RequestBody BrandUpdateRequest request) {
+    public ResponseEntity<SystemRes> updateSkuVariant(@PathVariable("id") String id,
+            @Validated @RequestBody SkuVariantUpdateRequest request) {
         try {
-            Result<Brand, Exception> result = adminBrandUseCase.updateBrand(request, id);
+            Result<SkuVariant, Exception> result = adminSkuVariantUseCase.updateSkuVariant(id, request);
             if (result.hasError()) {
                 return ResponseEntity.badRequest().body(
                         SystemRes.builder().status("400").message(result.error().getMessage()).data(null).build());
             }
-            BrandResponse response = brandMapper.toResponse(result.data());
+            SkuVariantResponse response = skuVariantMapper.toResponse(result.data());
             return ResponseEntity.ok().body(
-                    SystemRes.builder().status("200").message("Update brand success").data(response).build());
+                    SystemRes.builder().status("200").message("Update sku variant success").data(response).build());
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(SystemRes.builder().status("400").message(e.getMessage()).data(null).build());
@@ -76,26 +73,33 @@ public class AdminBrandHandler {
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<SystemRes> deleteBrand(@PathVariable("id") String id,
-            @AuthenticationPrincipal Jwt jwt,
-            @RequestHeader(value = "X-Correlation-ID", required = false) String incomingCorrelationId) {
-        String userId = jwt.getClaimAsString("userId");
-        EventContext ctx;
-        if (incomingCorrelationId != null && !incomingCorrelationId.isBlank()) {
-            ctx = new EventContext(incomingCorrelationId, userId, incomingCorrelationId,
-                    System.currentTimeMillis() + 5000L);
-        } else {
-            ctx = EventContext.generate(userId);
+    public ResponseEntity<SystemRes> deleteSkuVariant(@PathVariable("id") String id) {
+        try {
+            Result<SkuVariant, Exception> result = adminSkuVariantUseCase.deleteSkuVariantById(id);
+            if (result.hasError()) {
+                return ResponseEntity.badRequest().body(
+                        SystemRes.builder().status("400").message(result.error().getMessage()).data(null).build());
+            }
+            SkuVariantResponse response = skuVariantMapper.toResponse(result.data());
+            return ResponseEntity.ok().body(
+                    SystemRes.builder().status("200").message("Delete sku variant success").data(response).build());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(SystemRes.builder().status("400").message(e.getMessage()).data(null).build());
         }
-        try (org.slf4j.MDC.MDCCloseable ignored = org.slf4j.MDC.putCloseable("correlationId",
-                ctx.correlationId())) {
-            Result<Void, Exception> result = adminBrandUseCase.deleteBrand(ctx, id);
+    }
+
+    @DeleteMapping("/delete-by-product/{productId}")
+    public ResponseEntity<SystemRes> deleteSkuVariantByProductId(@PathVariable("productId") String productId) {
+        try {
+            Result<Void, Exception> result = adminSkuVariantUseCase.deleteSkuVariantByProductId(productId);
             if (result.hasError()) {
                 return ResponseEntity.badRequest().body(
                         SystemRes.builder().status("400").message(result.error().getMessage()).data(null).build());
             }
             return ResponseEntity.ok().body(
-                    SystemRes.builder().status("200").message("Delete brand success").data(null).build());
+                    SystemRes.builder().status("200").message("Delete sku variants by product success").data(null)
+                            .build());
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(SystemRes.builder().status("400").message(e.getMessage()).data(null).build());
@@ -103,33 +107,34 @@ public class AdminBrandHandler {
     }
 
     @GetMapping("/get-detail/{id}")
-    public ResponseEntity<SystemRes> getBrandById(@PathVariable("id") String id) {
+    public ResponseEntity<SystemRes> getSkuVariantById(@PathVariable("id") String id) {
         try {
-            Result<Brand, Exception> result = adminBrandUseCase.getBrandById(id);
+            Result<SkuVariant, Exception> result = adminSkuVariantUseCase.getSkuVariantById(id);
             if (result.hasError()) {
                 return ResponseEntity.badRequest().body(
                         SystemRes.builder().status("400").message(result.error().getMessage()).data(null).build());
             }
-            BrandResponse response = brandMapper.toResponse(result.data());
+            SkuVariantResponse response = skuVariantMapper.toResponse(result.data());
             return ResponseEntity.ok().body(
-                    SystemRes.builder().status("200").message("Get brand success").data(response).build());
+                    SystemRes.builder().status("200").message("Get sku variant success").data(response).build());
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(SystemRes.builder().status("400").message(e.getMessage()).data(null).build());
         }
     }
 
-    @GetMapping("/get-all")
-    public ResponseEntity<SystemRes> getAllBrand() {
+    @GetMapping("/get-by-product/{productId}")
+    public ResponseEntity<SystemRes> getSkuVariantByProductId(@PathVariable("productId") String productId) {
         try {
-            Result<List<Brand>, Exception> result = adminBrandUseCase.getAllBrand();
+            Result<List<SkuVariant>, Exception> result = adminSkuVariantUseCase.getSkuVariantByProductId(productId);
             if (result.hasError()) {
                 return ResponseEntity.badRequest().body(
                         SystemRes.builder().status("400").message(result.error().getMessage()).data(null).build());
             }
-            List<BrandResponse> response = brandMapper.toResponseList(result.data());
+            List<SkuVariantResponse> response = skuVariantMapper.toResponseList(result.data());
             return ResponseEntity.ok().body(
-                    SystemRes.builder().status("200").message("Get all brand success").data(response).build());
+                    SystemRes.builder().status("200").message("Get sku variants by product success").data(response)
+                            .build());
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(SystemRes.builder().status("400").message(e.getMessage()).data(null).build());
@@ -137,23 +142,25 @@ public class AdminBrandHandler {
     }
 
     @GetMapping("/get-page")
-    public ResponseEntity<SystemRes> getPageBrand(@Validated ExactPageRequest request) {
+    public ResponseEntity<SystemRes> getPageSkuVariant(@Validated ExactPageRequest request) {
         try {
-            Result<ExactPageResponse<Brand>, Exception> result = adminBrandUseCase.GetExactPageResponse(request);
+            Result<ExactPageResponse<SkuVariant>, Exception> result = adminSkuVariantUseCase
+                    .GetExactPageResponse(request);
             if (result.hasError()) {
                 return ResponseEntity.badRequest().body(
                         SystemRes.builder().status("400").message(result.error().getMessage()).data(null).build());
             }
-            ExactPageResponse<Brand> page = result.data();
-            ExactPageResponse<BrandResponse> responseData = ExactPageResponse.<BrandResponse>builder()
+            ExactPageResponse<SkuVariant> page = result.data();
+            ExactPageResponse<SkuVariantResponse> responseData = ExactPageResponse.<SkuVariantResponse>builder()
                     .currentPage(page.getCurrentPage())
                     .totalPages(page.getTotalPages())
                     .totalElements(page.getTotalElements())
                     .snapshotTime(page.getSnapshotTime())
-                    .data(brandMapper.toResponseList(page.getData()))
+                    .data(skuVariantMapper.toResponseList(page.getData()))
                     .build();
             return ResponseEntity.ok().body(
-                    SystemRes.builder().status("200").message("Get page brand success").data(responseData).build());
+                    SystemRes.builder().status("200").message("Get page sku variant success").data(responseData)
+                            .build());
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(SystemRes.builder().status("400").message(e.getMessage()).data(null).build());
@@ -161,24 +168,26 @@ public class AdminBrandHandler {
     }
 
     @GetMapping("/get-cursor")
-    public ResponseEntity<SystemRes> getBrandCursor(@Validated PanigationRequest request) {
+    public ResponseEntity<SystemRes> getSkuVariantCursor(@Validated PanigationRequest request) {
         try {
-            Result<PanigationResponse<Brand>, Exception> result = adminBrandUseCase.getBrandsCursor(request);
+            Result<PanigationResponse<SkuVariant>, Exception> result = adminSkuVariantUseCase
+                    .getBrandsCursor(request);
             if (result.hasError()) {
                 return ResponseEntity.badRequest().body(
                         SystemRes.builder().status("400").message(result.error().getMessage()).data(null).build());
             }
-            PanigationResponse<Brand> page = result.data();
-            PanigationResponse<BrandResponse> responseData = PanigationResponse.<BrandResponse>builder()
+            PanigationResponse<SkuVariant> page = result.data();
+            PanigationResponse<SkuVariantResponse> responseData = PanigationResponse.<SkuVariantResponse>builder()
                     .cursor(page.getCursor())
                     .limit(page.getLimit())
                     .sort(page.getSort())
                     .hasNext(page.getHasNext())
                     .hasPrevious(page.getHasPrevious())
-                    .data(brandMapper.toResponseList(page.getData()))
+                    .data(skuVariantMapper.toResponseList(page.getData()))
                     .build();
             return ResponseEntity.ok().body(
-                    SystemRes.builder().status("200").message("Get cursor brand success").data(responseData).build());
+                    SystemRes.builder().status("200").message("Get cursor sku variant success").data(responseData)
+                            .build());
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(SystemRes.builder().status("400").message(e.getMessage()).data(null).build());

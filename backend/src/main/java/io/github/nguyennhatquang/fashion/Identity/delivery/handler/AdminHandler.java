@@ -42,7 +42,7 @@ public class AdminHandler {
     }
 
     @PostMapping("/created-user")
-    @PreAuthorize("hasRole('ADMIN') ")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SystemRes> createdUser(@Validated @RequestBody AdminRequest.CreatedUsers createdUsers) {
         try {
             Result<UserProfile, Exception> result = adminUseCase.CreatedUser(createdUsers);

@@ -49,11 +49,21 @@ public class MongoCursorPaginationService {
         if (request.getFilters() != null && !request.getFilters().isEmpty()) {
             for (Map.Entry<String, Object> entry : request.getFilters().entrySet()) {
                 String filterKey = entry.getKey();
+                Object filterValue = entry.getValue();
+
                 // Chặn đứng nếu client filter những trường không được phép
                 if (!allowedFilterFields.contains(filterKey)) {
                     throw new IllegalArgumentException("Hệ thống không hỗ trợ lọc theo trường: " + filterKey);
                 }
-                query.addCriteria(Criteria.where(filterKey).is(entry.getValue()));
+
+                // TỰ ĐỘNG NHẬN DIỆN KIỂU DỮ LIỆU ĐỂ DÙNG TOÁN TỬ CHO CHUẨN
+                if (filterValue instanceof java.util.Collection<?>) {
+                    // Nếu Client gửi lên một List (Ví dụ: ["a", "b"]) -> Dùng toán tử $in
+                    query.addCriteria(Criteria.where(filterKey).in((java.util.Collection<?>) filterValue));
+                } else {
+                    // Nếu Client gửi lên 1 giá trị đơn (Ví dụ: "a") -> Dùng toán tử bằng ($eq)
+                    query.addCriteria(Criteria.where(filterKey).is(filterValue));
+                }
             }
         }
 

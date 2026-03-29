@@ -95,7 +95,7 @@ public class AdminCategoryUseCase implements IAdminCategoryUseCase {
     }
 
     @Override
-    public Result<PanigationResponse<Category>, Exception> getBrandsCursor(PanigationRequest request) {
+    public Result<PanigationResponse<Category>, Exception> getCategorysCursor(PanigationRequest request) {
         try {
             PanigationResponse<Category> response = categoryRepo.getCategoriesCursor(request);
             return Result.success(response);
