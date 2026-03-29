@@ -32,6 +32,21 @@ public class ProductRepositoryImpl implements IProductRepository {
 
     private final ProductMongoRepository productMongoRepository;
 
+    public List<String> softDeleteAndReturnIds(String categoryId) {
+        // Bước 1: Lấy danh sách ID trước
+        List<Product> products = productMongoRepository.findIdsByCategoryId(categoryId);
+        List<String> updatedIds = products.stream()
+                .map(Product::getId)
+                .toList();
+
+        // Bước 2: Thực hiện update hàng loạt dưới DB
+        if (!updatedIds.isEmpty()) {
+            productMongoRepository.softDeleteAllByCategoryId(categoryId);
+        }
+
+        return updatedIds; // Trả về danh sách ID cho Controller hoặc Log
+    }
+
     @Override
     public Product save(Product product) {
         return productMongoRepository.save(product);
@@ -90,6 +105,7 @@ public class ProductRepositoryImpl implements IProductRepository {
         // lên! productMongoRepository.softDeleteBySlug(slug);
     }
 
+  
     @Override
     public void softDeleteAll(List<Product> products) {
         if (products == null || products.isEmpty()) {

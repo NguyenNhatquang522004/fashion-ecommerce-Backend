@@ -25,6 +25,13 @@ public interface ProductMongoRepository extends MongoRepository<Product, String>
         @Query("{ 'brand_id': ?0, 'is_deleted': false }")
         List<Product> findProductsWithExactlyOneSpecificBrand(String brandId);
 
+        @Query(value = "{ 'category_ids': ?0, 'is_deleted': false }", fields = "{ '_id': 1 }")
+        List<Product> findIdsByCategoryId(String categoryId);
+
+        @Query("{ 'category_ids': ?0, 'is_deleted': false }")
+        @Update("{ '$set': { 'is_deleted': true, 'updated_at': new java.util.Date() } }")
+        void softDeleteAllByCategoryId(String categoryId);
+
         @Query("{ 'category_ids': [ ?0 ], 'is_deleted': false }")
         List<Product> findProductsWithExactlyOneSpecificCategory(String categoryId);
 

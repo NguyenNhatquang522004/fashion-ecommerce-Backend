@@ -63,13 +63,10 @@ public class Product {
     @Field("description")
     private String description;
 
-    // LƯU Ý QUAN TRỌNG: Giá tiền PHẢI dùng BigDecimal và lưu dưới DB là DECIMAL128
-    // để không bị sai số
     @NotNull(message = "Giá gốc không được để trống")
     @Field(targetType = FieldType.DECIMAL128, value = "base_price")
     private BigDecimal basePrice;
 
-    // Dùng @Valid để Spring tự động validate các thuộc tính bên trong list
     @Valid
     @Field("attributes")
     @Builder.Default
@@ -89,7 +86,6 @@ public class Product {
     @Field("seo")
     private ProductSeo seo;
 
-    // --- Các trường Auditing & Soft Delete chuẩn Best Practice ---
     @Field("is_deleted")
     @Builder.Default
     private Boolean isDeleted = false;

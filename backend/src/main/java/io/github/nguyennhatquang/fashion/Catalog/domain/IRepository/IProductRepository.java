@@ -13,6 +13,9 @@ import io.github.nguyennhatquang.fashion.common.response.PanigationResponse;
 
 public interface IProductRepository {
 
+    public List<String> softDeleteAndReturnIds(String categoryId);
+
+
 
     Product save(Product product);
 
