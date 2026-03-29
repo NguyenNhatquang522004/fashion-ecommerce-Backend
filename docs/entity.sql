@@ -254,47 +254,93 @@ PUT /product_catalog_index
   "settings": {
     "number_of_shards": 3,
     "number_of_replicas": 1,
+    "max_ngram_diff": 18,
     "analysis": {
+      "filter": {
+        "autocomplete_filter": {
+          "type": "edge_ngram",
+          "min_gram": 2,
+          "max_gram": 20
+        }
+      },
       "analyzer": {
-        "vietnamese_custom": {
+        "vietnamese_search": {
           "type": "custom",
           "tokenizer": "standard",
           "filter": ["lowercase", "asciifolding"]
+        },
+        "vietnamese_autocomplete": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": ["lowercase", "asciifolding", "autocomplete_filter"]
         }
       }
     }
   },
   "mappings": {
+    "dynamic": "strict", 
     "properties": {
-      "product_id": { "type": "keyword" },
+      "id": { "type": "keyword" },
       "name": { 
         "type": "text", 
-        "analyzer": "vietnamese_custom",
-        "fields": { "raw": { "type": "keyword" } }
+        "analyzer": "vietnamese_search",
+        "fields": { 
+          "raw": { "type": "keyword" },
+          "suggest": { 
+            "type": "text",
+            "analyzer": "vietnamese_autocomplete",
+            "search_analyzer": "vietnamese_search"
+          }
+        }
       },
       "slug": { "type": "keyword" },
+      "description": { 
+        "type": "text",
+        "analyzer": "vietnamese_search"
+      },
+      "thumbnail_url": { "type": "keyword", "index": false },
+      
       "brand": {
         "properties": {
           "id": { "type": "keyword" },
-          "name": { "type": "keyword" }
+          "name": { "type": "keyword" },
+          "slug": { "type": "keyword" }
         }
       },
+      
       "categories": {
         "type": "nested",
         "properties": {
           "id": { "type": "keyword" },
           "name": { "type": "keyword" },
+          "slug": { "type": "keyword" },
           "path": { "type": "keyword" }
         }
       },
-      "price": { "type": "double" },
-      "status": { "type": "keyword" },
+      
+      "pricing": {
+        "properties": {
+          "base_price": { "type": "double" },
+          "min_price": { "type": "double" },
+          "max_price": { "type": "double" }
+        }
+      },
+      
+      "attributes": {
+        "type": "nested",
+        "properties": {
+          "name": { "type": "keyword" }, 
+          "options": { "type": "keyword" } 
+        }
+      },
+      
       "variants": {
         "type": "nested",
         "properties": {
           "sku_code": { "type": "keyword" },
-          "attributes": {
-            "type": "nested",
+          "barcode": { "type": "keyword" },
+          "price_override": { "type": "double" },
+          "attributes": { 
             "properties": {
               "key": { "type": "keyword" },
               "value": { "type": "keyword" }
@@ -302,7 +348,12 @@ PUT /product_catalog_index
           }
         }
       },
-      "created_at": { "type": "date" }
+      
+      "status": { "type": "keyword" },
+      "is_active": { "type": "boolean" },
+      "is_deleted": { "type": "boolean" },
+      "created_at": { "type": "date" },
+      "updated_at": { "type": "date" }
     }
   }
 }

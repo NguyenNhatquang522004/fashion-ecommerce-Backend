@@ -23,6 +23,7 @@ import io.github.nguyennhatquang.fashion.Catalog.delivery.Mapper.BrandMapper;
 import io.github.nguyennhatquang.fashion.Catalog.domain.entity.Brand;
 import io.github.nguyennhatquang.fashion.Catalog.usecase.IUseCase.IAdminBrandUseCase;
 import io.github.nguyennhatquang.fashion.common.kafka.EventContext;
+import io.github.nguyennhatquang.fashion.common.logs.MdcLog;
 import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
 import io.github.nguyennhatquang.fashion.common.request.PanigationRequest;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
@@ -75,6 +76,7 @@ public class AdminBrandHandler {
         }
     }
 
+    @MdcLog
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<SystemRes> deleteBrand(@PathVariable("id") String id,
             @AuthenticationPrincipal Jwt jwt,
@@ -87,8 +89,7 @@ public class AdminBrandHandler {
         } else {
             ctx = EventContext.generate(userId);
         }
-        try (org.slf4j.MDC.MDCCloseable ignored = org.slf4j.MDC.putCloseable("correlationId",
-                ctx.correlationId())) {
+        try {
             Result<Void, Exception> result = adminBrandUseCase.deleteBrand(ctx, id);
             if (result.hasError()) {
                 return ResponseEntity.badRequest().body(

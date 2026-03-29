@@ -1,0 +1,30 @@
+# Kết nối (Ghi đè bằng biến môi trường ở docker-compose)
+mongo-url = "mongodb://admin:secret@mongodb:27017/fashion?replicaSet=rs0" 
+elasticsearch-urls = ["http://elasticsearch:9200"]
+
+# Hiệu năng
+elasticsearch-max-conns = 10 
+elasticsearch-max-secs = 2
+elasticsearch-max-bytes = 8000000 
+gzip = true
+
+# Chế độ đồng bộ
+direct-read-namespaces = ["fashion.products"] # Lần chạy đầu tiên sẽ quét toàn bộ DB
+change-stream-namespaces = ["fashion.products", "fashion.sku_variants"] # Lắng nghe realtime
+
+# Logs
+[logs]
+info = true
+warn = true
+error = true
+
+# Kích hoạt Javascript Plugin để biến đổi dữ liệu
+[script]
+namespace = "fashion.products"
+script = "mapper.js"
+routing = true # Cho phép script JS đổi index và ID đích
+
+[script]
+namespace = "fashion.sku_variants"
+script = "mapper.js"
+routing = true # Cho phép map event thay đổi Variant về document của Product

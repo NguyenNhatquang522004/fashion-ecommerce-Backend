@@ -160,8 +160,18 @@ services:
       interval: 30s
       timeout: 15s
       retries: 10
-      start_period: 120s
-
+      start_period: 120s  
+      
+  logstash:
+    image: logstash:8.10.2
+    container_name: logstash
+    command: logstash -e 'input { tcp { port => 5044 codec => json } } output { elasticsearch { hosts => ["elasticsearch:9200"] index => "fashion-logs-%{+YYYY.MM.dd}" } }'
+    ports:
+      - "5044:5044"
+    networks:
+      - fashion-ecommerce-network
+    depends_on:
+      - elasticsearch
   # ─────────────────────────────────────────────────────────────
   # MongoDB
   # ─────────────────────────────────────────────────────────────
@@ -184,7 +194,27 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
-
+  monstache:
+    image: rwynn/monstache:latest
+    container_name: monstache_fashion
+    command: -f /etc/monstache/monstache.toml
+    volumes:
+      - ./config:/etc/monstache
+    restart: unless-stopped
+    environment:
+      - MONSTACHE_MONGO_URL=mongodb://admin:secret@mongodb:27017/fashion?replicaSet=rs0
+      - MONSTACHE_ES_URLS=http://elasticsearch:9200
+    depends_on:
+      - mongodb
+      - elasticsearch
+    networks:
+      - fashion-ecommerce-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200/_cluster/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
   # ─────────────────────────────────────────────────────────────
   # Mongo Express – web UI for MongoDB
   #   URL: http://localhost:8083
