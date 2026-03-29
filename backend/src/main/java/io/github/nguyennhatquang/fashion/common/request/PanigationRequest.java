@@ -1,7 +1,6 @@
 package io.github.nguyennhatquang.fashion.common.request;
 
-import com.google.auto.value.AutoValue.Builder;
-
+import lombok.Builder;
 import lombok.Data;
 
 @Data
