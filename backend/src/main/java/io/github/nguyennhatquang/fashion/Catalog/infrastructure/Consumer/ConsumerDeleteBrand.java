@@ -3,37 +3,40 @@ package io.github.nguyennhatquang.fashion.Catalog.infrastructure.Consumer;
 import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.listener.BatchListenerFailedException;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import io.github.nguyennhatquang.fashion.Catalog.domain.IRepository.IBrandRepository;
 import io.github.nguyennhatquang.fashion.Catalog.domain.IRepository.IProductRepository;
 import io.github.nguyennhatquang.fashion.Catalog.domain.IRepository.ISkuVariantRepository;
+import io.github.nguyennhatquang.fashion.Catalog.domain.entity.Product;
 import io.github.nguyennhatquang.fashion.common.Enum.EventProcessStatus;
 import io.github.nguyennhatquang.fashion.common.Enum.RedisKeyPrefix;
 import io.github.nguyennhatquang.fashion.common.Enum.EventTopic.TopicName;
 import io.github.nguyennhatquang.fashion.common.Payload.Category.DeleteBrandPayload;
 import io.github.nguyennhatquang.fashion.common.Utils.ParseUtils;
-import io.github.nguyennhatquang.fashion.common.errors.ContextTimeoutException;
 import io.github.nguyennhatquang.fashion.common.errors.DatabaseTransientException;
 import io.github.nguyennhatquang.fashion.common.errors.UnprocessablePayloadException;
+import io.github.nguyennhatquang.fashion.common.infrastructure.auth.UserContextHolder;
 import io.github.nguyennhatquang.fashion.common.kafka.EventContext;
 import io.github.nguyennhatquang.fashion.common.kafka.IntegrationEvent;
 import io.github.nguyennhatquang.fashion.common.response.ProcessResult;
 import io.github.nguyennhatquang.fashion.common.shared.IRedis;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,11 +47,12 @@ public class ConsumerDeleteBrand {
 
     private final IProductRepository productRepository;
     private final ISkuVariantRepository skuVariantRepository;
+    @Qualifier("virtualThreadExecutor")
+    private final ExecutorService virtualThreadExecutor;
 
     // Các Dependencies bắt buộc cho Infrastructure
     private final IRedis redis;
     private final RedissonClient redisson; // Thư viện Distributed Lock
-    private final ObjectMapper objectMapper;
     private final DeadLetterPublishingRecoverer recoverer; // Hứng Lỗi A
 
     // =========================================================================
@@ -57,33 +61,50 @@ public class ConsumerDeleteBrand {
     @KafkaListener(topics = TopicName.BRAND_DELETE, groupId = "brand-delete-group", containerFactory = "batchKafkaListenerContainerFactory", concurrency = "3")
     public void listenBatch(List<ConsumerRecord<String, String>> records, Acknowledgment acknowledgment) {
 
+        // Fix rủi ro NullPointerException nếu Key bị null
+        Map<String, List<ConsumerRecord<String, String>>> groupedRecords = records.stream()
+                .collect(Collectors.groupingBy(record -> record.key() != null ? record.key() : "NO_KEY"));
+
         // 1. Dùng CompletableFuture với Virtual Threads để xử lý song song
-        List<CompletableFuture<ProcessResult>> futures = records.stream()
-                .map(record -> CompletableFuture.supplyAsync(() -> processSingleMessage(record)))
+        List<CompletableFuture<Optional<ProcessResult>>> futures = groupedRecords.values().stream()
+                .map(brandRecords -> CompletableFuture.supplyAsync(() -> {
+
+                    // 3. BÊN TRONG THREAD NÀY: Chạy TUẦN TỰ từng sự kiện của cùng 1 Brand
+                    for (ConsumerRecord<String, String> record : brandRecords) {
+                        ProcessResult result = processSingleMessage(record);
+                        if (!result.isSuccess()) {
+                            return Optional.of(result); // Nếu có cái lỗi, dừng ngay nhánh này và báo lỗi
+                        }
+                    }
+                    // FIX 1: Chỉ định rõ kiểu Generic cho Optional.empty()
+                    return Optional.<ProcessResult>empty();
+
+                }, virtualThreadExecutor))
                 .toList();
 
         // 2. BARRIER: Đợi tất cả các Threads hoàn thành
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
         // 3. TÌM MESSAGE LỖI (LỖI B) CÓ OFFSET THẤP NHẤT
+        // FIX 2,3,4: Bóc vỏ Optional ra trước khi xử lý
         Optional<ProcessResult> firstFail = futures.stream()
-                .map(CompletableFuture::join)
-                .filter(res -> !res.isSuccess())
-                .min(Comparator.comparingLong(res -> res.getRecord().offset()));
+                .map(CompletableFuture::join) // Lấy kết quả từ Thread (trả về Optional<ProcessResult>)
+                .filter(Optional::isPresent) // Lọc bỏ những nhánh thành công (Optional rỗng)
+                .map(Optional::get) // Bóc vỏ Optional ra, lúc này ta có Stream<ProcessResult> ròng
+                .min(Comparator.comparingLong(res -> res.getRecord().offset())); // Tìm cái có offset nhỏ nhất
 
         if (firstFail.isPresent()) {
             ProcessResult failRes = firstFail.get();
             log.warn("Batch có lỗi tại offset {}. Kích hoạt Kafka Seek để Retry chặn dưới.",
                     failRes.getRecord().offset());
-            // Ném lỗi để Kafka Retry từ vị trí này. Các message trước đó sẽ tự động được
-            // Commit ngầm.
+            // Ném lỗi để Kafka Retry từ vị trí này.
             throw new BatchListenerFailedException(
                     "Lỗi tại offset: " + failRes.getRecord().offset(),
                     failRes.getException(),
                     failRes.getRecord());
         }
 
-        // 4. Nếu 100% thành công (hoặc Lỗi A đã bị vứt hết vào DLQ), chốt sổ cả Batch
+        // 4. Nếu 100% thành công, chốt sổ cả Batch
         acknowledgment.acknowledge();
     }
 
@@ -118,7 +139,7 @@ public class ConsumerDeleteBrand {
             boolean acquired = false;
             try {
                 // Đợi tối đa 3s để lấy Lock. Lock tự nhả sau 10s nếu hệ thống chết ngỏm
-                acquired = lock.tryLock(3, 10, TimeUnit.SECONDS);
+                acquired = lock.tryLock(3, TimeUnit.SECONDS);
 
                 if (!acquired) {
                     throw new DatabaseTransientException(
@@ -180,13 +201,21 @@ public class ConsumerDeleteBrand {
 
         DeleteBrandPayload payload = event.payload();
         String brandId = payload.getBrandID();
+        UserContextHolder.setUserId(ctx.userId());
+        try {
+            log.info("[{}] Thực thi xóa Brand: {}", ctx.correlationId(), brandId);
+            List<Product> products = productRepository.findProductsWithExactlyOneSpecificBrand(brandId);
 
-        log.info("[{}] Thực thi xóa Brand: {}", ctx.correlationId(), brandId);
+            products.stream()
+                    .map(Product::getId)
+                    .forEach(productId -> {
+                        skuVariantRepository.softDeleteByProductId(productId);
+                    });
+            productRepository.softDeleteAll(products);
 
-        // 2. Gọi Repository thao tác (Ví dụ: Xóa Brand và Cập nhật trạng thái các
-        // SkuVariant/Product)
-        // productRepository.disableProductsByBrand(brandId);
-        // Nếu Database chết, nó sẽ văng Exception (trở thành Lỗi B)
+        } finally {
+            UserContextHolder.clear();
+        }
     }
 
 }

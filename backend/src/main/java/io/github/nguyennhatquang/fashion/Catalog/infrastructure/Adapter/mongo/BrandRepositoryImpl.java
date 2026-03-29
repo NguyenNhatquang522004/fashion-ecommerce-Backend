@@ -67,18 +67,12 @@ public class BrandRepositoryImpl implements IBrandRepository {
 
     @Override
     public void softDeleteById(String id) {
-        brandMongoRepository.findById(id).ifPresent(brand -> {
-            brand.setIsDeleted(true);
-            brandMongoRepository.save(brand);
-        });
+        brandMongoRepository.softDeleteById(id);
     }
 
     @Override
     public void softDeleteBySlug(String slug) {
-        brandMongoRepository.findBySlug(slug).ifPresent(brand -> {
-            brand.setIsDeleted(true);
-            brandMongoRepository.save(brand);
-        });
+        brandMongoRepository.softDeleteBySlug(slug);
     }
 
     @Override

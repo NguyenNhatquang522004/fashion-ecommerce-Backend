@@ -8,7 +8,6 @@ public record EventContext(
         String traceId, // Tích hợp với OpenTelemetry/Zipkin nếu cần
         long timeoutMs // (Tùy chọn) Giới hạn thời gian xử lý
 ) {
-    // Helper method tạo context mới cho entry point (ví dụ: REST Controller)
     public static EventContext generate(String userId) {
         String id = java.util.UUID.randomUUID().toString();
         return new EventContext(id, userId, id, 5000L);

@@ -13,7 +13,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import io.github.nguyennhatquang.fashion.Catalog.domain.IRepository.ICategoryRepository;
-import io.github.nguyennhatquang.fashion.Catalog.domain.entity.Brand;
 import io.github.nguyennhatquang.fashion.Catalog.domain.entity.Category;
 import io.github.nguyennhatquang.fashion.Catalog.infrastructure.Repository.CategoryMongoRepository;
 import io.github.nguyennhatquang.fashion.Catalog.infrastructure.Repository.IdOnly;
@@ -68,29 +67,19 @@ public class CategoryRepositoryImpl implements ICategoryRepository {
 
     @Override
     public void softDeleteById(String id) {
-        categoryMongoRepository.findById(id).ifPresent(category -> {
-            category.setIsDeleted(true);
-            categoryMongoRepository.save(category);
-        });
+        categoryMongoRepository.softDeleteById(id);
     }
 
     @Override
     public void softDeleteBySlug(String slug) {
-        categoryMongoRepository.findBySlug(slug).ifPresent(category -> {
-            category.setIsDeleted(true);
-            categoryMongoRepository.save(category);
-        });
+        categoryMongoRepository.softDeleteBySlug(slug);
     }
 
     @Override
     public void softDeleteByParentId(String parentId) {
-        categoryMongoRepository.findByParentId(parentId).ifPresent(categories -> {
-            categories.forEach(category -> {
-                category.setIsDeleted(true);
-                categoryMongoRepository.save(category);
-            });
-        });
+        categoryMongoRepository.softDeleteByParentId(parentId);
     }
+
     @Override
     public Optional<Category> findById(String id) {
         return categoryMongoRepository.findById(id);
@@ -111,10 +100,9 @@ public class CategoryRepositoryImpl implements ICategoryRepository {
         return categoryMongoRepository.findByParentId(parentId);
     }
 
-
     @Override
     public ExactPageResponse<Category> getCategoriesExactPage(ExactPageRequest request) {
-          // 1. Chốt Snapshot Time (Đóng băng Timeline)
+        // 1. Chốt Snapshot Time (Đóng băng Timeline)
         Instant currentSnapshot = request.getSnapshotTime() != null
                 ? ConvertUtils.toInstant(request.getSnapshotTime())
                 : Instant.now();
@@ -158,7 +146,7 @@ public class CategoryRepositoryImpl implements ICategoryRepository {
 
     @Override
     public PanigationResponse<Category> getCategoriesCursor(PanigationRequest request) {
-         int limit = request.getLimit() != null ? request.getLimit() : 10;
+        int limit = request.getLimit() != null ? request.getLimit() : 10;
         // Fetch dư 1 record để check hasNext
         PageRequest pageRequest = PageRequest.of(0, limit + 1);
 

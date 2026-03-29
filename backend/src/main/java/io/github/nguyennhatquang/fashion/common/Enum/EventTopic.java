@@ -13,7 +13,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum EventTopic {
 
     BRAND_DELETE("brand-delete", 3, 1),
-
     ORDER_CREATED("order-created", 3, 1),
     PAYMENT_PROCESSED("payment-processed", 3, 1),
     PAYMENT_FAILED("payment-failed", 3, 1),

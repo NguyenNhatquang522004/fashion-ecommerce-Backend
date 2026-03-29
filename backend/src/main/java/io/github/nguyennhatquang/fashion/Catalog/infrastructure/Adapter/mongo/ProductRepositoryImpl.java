@@ -64,31 +64,45 @@ public class ProductRepositoryImpl implements IProductRepository {
 
     @Override
     public void deleteAll(List<Product> products) {
-        productMongoRepository.deleteAll(products);
+        if (products == null || products.isEmpty()) {
+            return;
+        }
+
+        // 1. Chỉ lấy ra danh sách các ID
+        List<String> productIds = products.stream()
+                .map(Product::getId)
+                .toList();
+
+        // 2. Giao việc cho MongoDB tự xử lý siêu tốc
+        productMongoRepository.softDeleteAllByIds(productIds);
     }
 
     @Override
     public void softDeleteById(String id) {
-        productMongoRepository.findById(id).ifPresent(product -> {
-            product.setIsDeleted(true);
-            productMongoRepository.save(product);
-        });
+        // 1 chuyến xe duy nhất, Mongo tự động set cờ isDeleted mà không cần kéo dữ liệu
+        // lên!
+        productMongoRepository.softDeleteById(id);
     }
 
     @Override
     public void softDeleteBySlug(String slug) {
-        productMongoRepository.findBySlug(slug).ifPresent(product -> {
-            product.setIsDeleted(true);
-            productMongoRepository.save(product);
-        });
+        // 1 chuyến xe duy nhất, Mongo tự động set cờ isDeleted mà không cần kéo dữ liệu
+        // lên! productMongoRepository.softDeleteBySlug(slug);
     }
 
     @Override
     public void softDeleteAll(List<Product> products) {
-        products.forEach(product -> {
-            product.setIsDeleted(true);
-            productMongoRepository.save(product);
-        });
+        if (products == null || products.isEmpty()) {
+            return;
+        }
+
+        // 1. Chỉ lấy ra danh sách các ID
+        List<String> productIds = products.stream()
+                .map(Product::getId)
+                .toList();
+
+        // 2. Giao việc cho MongoDB tự xử lý siêu tốc
+        productMongoRepository.softDeleteAllByIds(productIds);
     }
 
     @Override

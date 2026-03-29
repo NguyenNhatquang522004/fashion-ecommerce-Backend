@@ -12,6 +12,8 @@ import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.PanigationResponse;
 
 public interface IProductRepository {
+
+
     Product save(Product product);
 
     List<Product> saveAll(List<Product> products);

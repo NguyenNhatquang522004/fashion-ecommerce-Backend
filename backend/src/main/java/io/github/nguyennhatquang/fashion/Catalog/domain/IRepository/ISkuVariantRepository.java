@@ -3,6 +3,8 @@ package io.github.nguyennhatquang.fashion.Catalog.domain.IRepository;
 import java.util.List;
 import java.util.Optional;
 
+import com.esotericsoftware.minlog.Log;
+
 import io.github.nguyennhatquang.fashion.Catalog.domain.entity.Brand;
 import io.github.nguyennhatquang.fashion.Catalog.domain.entity.SkuVariant;
 import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
@@ -48,4 +50,6 @@ public interface ISkuVariantRepository {
     ExactPageResponse<SkuVariant> getSkuVariantsExactPage(ExactPageRequest request);
 
     PanigationResponse<SkuVariant> getSkuVariantsCursor(PanigationRequest request);
+
+    Long countByProductId(String productId);
 }

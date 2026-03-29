@@ -68,26 +68,19 @@ public class SkuVariantRepositoryImpl implements ISkuVariantRepository {
 
     @Override
     public void softDeleteById(String id) {
-        skuVariantMongoRepository.findById(id).ifPresent(skuVariant -> {
-            skuVariant.setIsDeleted(true);
-            skuVariantMongoRepository.save(skuVariant);
-        });
+        skuVariantMongoRepository.softDeleteById(id);
     }
 
     @Override
     public void softDeleteBySkuCode(String skuCode) {
-        skuVariantMongoRepository.findBySkuCode(skuCode).ifPresent(skuVariant -> {
-            skuVariant.setIsDeleted(true);
-            skuVariantMongoRepository.save(skuVariant);
-        });
+        skuVariantMongoRepository.softDeleteBySkuCode(skuCode);
     }
 
     @Override
     public void softDeleteByProductId(String productId) {
-        skuVariantMongoRepository.findByProductId(productId).forEach(skuVariant -> {
-            skuVariant.setIsDeleted(true);
-            skuVariantMongoRepository.save(skuVariant);
-        });
+        // 1 lệnh duy nhất, 1 chuyến xe duy nhất, MongoDb tự động cập nhật hàng loạt
+        // (updateMany)
+        skuVariantMongoRepository.softDeleteAllByProductId(productId);
     }
 
     @Override
@@ -245,5 +238,10 @@ public class SkuVariantRepositoryImpl implements ISkuVariantRepository {
                 .hasPrevious(responseHasPrevious)
                 .data(data)
                 .build();
+    }
+
+    @Override
+    public Long countByProductId(String productId) {
+        return skuVariantMongoRepository.countByProductId(productId);
     }
 }

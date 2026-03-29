@@ -10,6 +10,7 @@ import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
 import io.github.nguyennhatquang.fashion.common.request.PanigationRequest;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.PanigationResponse;
+import io.github.nguyennhatquang.fashion.common.kafka.EventContext;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 
 public interface IAdminBrandUseCase {
@@ -17,7 +18,7 @@ public interface IAdminBrandUseCase {
 
     Result<Brand, Exception> updateBrand(BrandUpdateRequest request, String id);
 
-    Result<Void, Exception> deleteBrand(String id);
+    Result<Void, Exception> deleteBrand(EventContext ctx, String id);
 
     Result<Brand, Exception> getBrandById(String id);
 

@@ -3,6 +3,7 @@ package io.github.nguyennhatquang.fashion.Catalog.infrastructure.Repository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
+import org.springframework.data.mongodb.repository.Update;
 import org.springframework.stereotype.Repository;
 
 import io.github.nguyennhatquang.fashion.Catalog.domain.entity.Category;
@@ -15,49 +16,61 @@ import java.util.Optional;
 
 @Repository
 public interface ProductMongoRepository extends MongoRepository<Product, String> {
-    Optional<Product> findBySlug(String slug);
+        Optional<Product> findBySlug(String slug);
 
-    Optional<Product> findByStatus(ProductStatusEnum status);
+        Optional<Product> findByStatus(ProductStatusEnum status);
 
-    List<Product> findByCategoryIdsContainingAndIsDeletedFalse(String categoryId);
+        List<Product> findByCategoryIdsContainingAndIsDeletedFalse(String categoryId);
 
-    @Query("{ 'brand_id': ?0, 'is_deleted': false }")
-    List<Product> findProductsWithExactlyOneSpecificBrand(String brandId);
+        @Query("{ 'brand_id': ?0, 'is_deleted': false }")
+        List<Product> findProductsWithExactlyOneSpecificBrand(String brandId);
 
-    @Query("{ 'category_ids': [ ?0 ], 'is_deleted': false }")
-    List<Product> findProductsWithExactlyOneSpecificCategory(String categoryId);
+        @Query("{ 'category_ids': [ ?0 ], 'is_deleted': false }")
+        List<Product> findProductsWithExactlyOneSpecificCategory(String categoryId);
 
-    @Query(value = "{ 'created_at' : { $lte: ?0 } }", count = true)
-    long countBySnapshot(Instant snapshotTime);
+        @Query(value = "{ 'created_at' : { $lte: ?0 } }", count = true)
+        long countBySnapshot(Instant snapshotTime);
 
-    // 2. Bước A: Lấy ID siêu tốc (Covered Query). fields = "{ '_id': 1 }" là chìa
-    // khóa!
-    @Query(value = "{ 'created_at' : { $lte: ?0 } }", fields = "{ '_id': 1 }")
-    List<IdOnly> findIdsBySnapshot(Instant snapshotTime, Pageable pageable);
+        @Query("{ '_id': { $in: ?0 } }")
+        @Update("{ '$set': { 'isDeleted': true } }")
+        void softDeleteAllByIds(List<String> productIds);
 
-    // 3. Bước B: Lấy Full Data. (Lưu ý: Toán tử $in không đảm bảo thứ tự, nên phải
-    // ép sort lại)
-    @Query(value = "{ '_id' : { $in: ?0 } }", sort = "{ 'created_at': -1, '_id': -1 }")
-    List<Product> fetchFullDataByIds(List<String> ids);
+        @Query("{ '_id' : ?0 }")
+        @Update("{ '$set' : { 'isDeleted' : true } }")
+        void softDeleteById(String id);
 
-    // 1. Fetch NEXT page (DESC list)
-    @Query(value = "{ " +
-            "'is_deleted': false, " +
-            "'$or': [ " +
-            "   { 'created_at': { $lt: ?0 } }, " +
-            "   { 'created_at': ?0, '_id': { $lt: ?1 } } " +
-            "] " +
-            "}", sort = "{ 'created_at': -1, '_id': -1 }")
-    List<Product> findNextPageDesc(Instant cursorTime, String cursorId, Pageable pageable);
+        @Query("{ 'slug' : ?0 }")
+        @Update("{ '$set' : { 'isDeleted' : true } }")
+        void softDeleteBySlug(String slug);
 
-    // 2. Fetch PREVIOUS page (DESC list) -> Query ngược lại (ASC)
+        // 2. Bước A: Lấy ID siêu tốc (Covered Query). fields = "{ '_id': 1 }" là chìa
+        // khóa!
+        @Query(value = "{ 'created_at' : { $lte: ?0 } }", fields = "{ '_id': 1 }")
+        List<IdOnly> findIdsBySnapshot(Instant snapshotTime, Pageable pageable);
 
-    @Query(value = "{ " +
-            "'is_deleted': false, " +
-            "'$or': [ " +
-            "   { 'created_at': { $gt: ?0 } }, " +
-            "   { 'created_at': ?0, '_id': { $gt: ?1 } } " +
-            "] " +
-            "}", sort = "{ 'created_at': 1, '_id': 1 }")
-    List<Product> findPreviousPageDesc(Instant cursorTime, String cursorId, Pageable pageable);
+        // 3. Bước B: Lấy Full Data. (Lưu ý: Toán tử $in không đảm bảo thứ tự, nên phải
+        // ép sort lại)
+        @Query(value = "{ '_id' : { $in: ?0 } }", sort = "{ 'created_at': -1, '_id': -1 }")
+        List<Product> fetchFullDataByIds(List<String> ids);
+
+        // 1. Fetch NEXT page (DESC list)
+        @Query(value = "{ " +
+                        "'is_deleted': false, " +
+                        "'$or': [ " +
+                        "   { 'created_at': { $lt: ?0 } }, " +
+                        "   { 'created_at': ?0, '_id': { $lt: ?1 } } " +
+                        "] " +
+                        "}", sort = "{ 'created_at': -1, '_id': -1 }")
+        List<Product> findNextPageDesc(Instant cursorTime, String cursorId, Pageable pageable);
+
+        // 2. Fetch PREVIOUS page (DESC list) -> Query ngược lại (ASC)
+
+        @Query(value = "{ " +
+                        "'is_deleted': false, " +
+                        "'$or': [ " +
+                        "   { 'created_at': { $gt: ?0 } }, " +
+                        "   { 'created_at': ?0, '_id': { $gt: ?1 } } " +
+                        "] " +
+                        "}", sort = "{ 'created_at': 1, '_id': 1 }")
+        List<Product> findPreviousPageDesc(Instant cursorTime, String cursorId, Pageable pageable);
 }
