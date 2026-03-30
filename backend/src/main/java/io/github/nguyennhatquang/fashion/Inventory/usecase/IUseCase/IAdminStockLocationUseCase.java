@@ -6,6 +6,8 @@ import java.util.UUID;
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.StockLocation.StockLocationRequest.StockLocationCreateRequest;
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.StockLocation.StockLocationRequest.StockLocationUpdateRequest;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.StockLocation;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 
 public interface IAdminStockLocationUseCase {
@@ -17,5 +19,5 @@ public interface IAdminStockLocationUseCase {
 
     Result<StockLocation, Exception> getStockLocationById(UUID id);
 
-    Result<List<StockLocation>, Exception> getAllStockLocations();
+    Result<ExactPageResponse<StockLocation>, Exception> getAllStockLocations(ExactPageRequest request);
 }

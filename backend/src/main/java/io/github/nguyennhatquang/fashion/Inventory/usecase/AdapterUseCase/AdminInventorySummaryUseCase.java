@@ -11,6 +11,8 @@ import io.github.nguyennhatquang.fashion.Inventory.delivery.Mapper.InventorySumm
 import io.github.nguyennhatquang.fashion.Inventory.domain.IRepository.postgres.IInventorySummaryRepository;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.InventorySummary;
 import io.github.nguyennhatquang.fashion.Inventory.usecase.IUseCase.IAdminInventorySummaryUseCase;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -72,9 +74,9 @@ public class AdminInventorySummaryUseCase implements IAdminInventorySummaryUseCa
     }
 
     @Override
-    public Result<List<InventorySummary>, Exception> getAllInventorySummaries() {
+    public Result<ExactPageResponse<InventorySummary>, Exception> getAllInventorySummaries(ExactPageRequest request) {
         try {
-            List<InventorySummary> summaries = summaryRepository.findAll();
+            ExactPageResponse<InventorySummary> summaries = summaryRepository.getInventorySummaryExactPage(request);
             return Result.success(summaries);
         } catch (Exception e) {
             return Result.error(e);

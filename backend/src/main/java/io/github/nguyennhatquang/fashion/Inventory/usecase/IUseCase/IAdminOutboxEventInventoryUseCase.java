@@ -6,6 +6,8 @@ import java.util.UUID;
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.OutboxEventInventory.OutboxEventInventoryRequest.OutboxEventInventoryCreateRequest;
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.OutboxEventInventory.OutboxEventInventoryRequest.OutboxEventInventoryUpdateRequest;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.OutboxEventInventory;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 
 public interface IAdminOutboxEventInventoryUseCase {
@@ -15,5 +17,5 @@ public interface IAdminOutboxEventInventoryUseCase {
 
     Result<OutboxEventInventory, Exception> getOutboxEventById(UUID id);
 
-    Result<List<OutboxEventInventory>, Exception> getAllOutboxEvents();
+    Result<ExactPageResponse<OutboxEventInventory>, Exception> getAllOutboxEvents(ExactPageRequest request);
 }

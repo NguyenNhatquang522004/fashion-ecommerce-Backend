@@ -11,6 +11,8 @@ import io.github.nguyennhatquang.fashion.Inventory.delivery.Mapper.StockReservat
 import io.github.nguyennhatquang.fashion.Inventory.domain.IRepository.postgres.IStockReservationRepository;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.StockReservation;
 import io.github.nguyennhatquang.fashion.Inventory.usecase.IUseCase.IAdminStockReservationUseCase;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -72,9 +74,9 @@ public class AdminStockReservationUseCase implements IAdminStockReservationUseCa
     }
 
     @Override
-    public Result<List<StockReservation>, Exception> getAllStockReservations() {
+    public Result<ExactPageResponse<StockReservation>, Exception> getAllStockReservations(ExactPageRequest request) {
         try {
-            List<StockReservation> reservations = reservationRepository.findAll();
+            ExactPageResponse<StockReservation> reservations = reservationRepository.getStockReservationExactPage(request);
             return Result.success(reservations);
         } catch (Exception e) {
             return Result.error(e);

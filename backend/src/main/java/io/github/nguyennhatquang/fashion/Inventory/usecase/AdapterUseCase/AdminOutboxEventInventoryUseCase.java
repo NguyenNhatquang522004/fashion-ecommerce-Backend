@@ -9,8 +9,11 @@ import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.OutboxEventInven
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.OutboxEventInventory.OutboxEventInventoryRequest.OutboxEventInventoryUpdateRequest;
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Mapper.OutboxEventInventoryMapper;
 import io.github.nguyennhatquang.fashion.Inventory.domain.IRepository.postgres.IOutboxEventInventoryRepository;
+import io.github.nguyennhatquang.fashion.Inventory.domain.entity.InventorySummary;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.OutboxEventInventory;
 import io.github.nguyennhatquang.fashion.Inventory.usecase.IUseCase.IAdminOutboxEventInventoryUseCase;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +37,8 @@ public class AdminOutboxEventInventoryUseCase implements IAdminOutboxEventInvent
     }
 
     @Override
-    public Result<OutboxEventInventory, Exception> updateOutboxEventStatus(OutboxEventInventoryUpdateRequest request, UUID id) {
+    public Result<OutboxEventInventory, Exception> updateOutboxEventStatus(OutboxEventInventoryUpdateRequest request,
+            UUID id) {
         try {
             OutboxEventInventory event = outboxRepository.findById(id).orElse(null);
             if (event == null) {
@@ -62,9 +66,9 @@ public class AdminOutboxEventInventoryUseCase implements IAdminOutboxEventInvent
     }
 
     @Override
-    public Result<List<OutboxEventInventory>, Exception> getAllOutboxEvents() {
+    public Result<ExactPageResponse<OutboxEventInventory>, Exception> getAllOutboxEvents(ExactPageRequest request) {
         try {
-            List<OutboxEventInventory> events = outboxRepository.findAll();
+            ExactPageResponse<OutboxEventInventory> events = outboxRepository.getOutboxEventInventoryExactPage(request);
             return Result.success(events);
         } catch (Exception e) {
             return Result.error(e);

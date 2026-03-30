@@ -11,6 +11,8 @@ import io.github.nguyennhatquang.fashion.Inventory.delivery.Mapper.WarehouseMapp
 import io.github.nguyennhatquang.fashion.Inventory.domain.IRepository.postgres.IWarehouseRepository;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.Warehouse;
 import io.github.nguyennhatquang.fashion.Inventory.usecase.IUseCase.IAdminWarehouseUseCase;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -72,9 +74,9 @@ public class AdminWarehouseUseCase implements IAdminWarehouseUseCase {
     }
 
     @Override
-    public Result<List<Warehouse>, Exception> getAllWarehouses() {
+    public Result<ExactPageResponse<Warehouse>, Exception> getAllWarehouses(ExactPageRequest request) {
         try {
-            List<Warehouse> warehouses = warehouseRepository.findAll();
+            ExactPageResponse<Warehouse> warehouses = warehouseRepository.getWarehouseExactPage(request);
             return Result.success(warehouses);
         } catch (Exception e) {
             return Result.error(e);

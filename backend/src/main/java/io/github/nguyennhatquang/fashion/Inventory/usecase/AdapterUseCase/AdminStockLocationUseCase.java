@@ -11,6 +11,8 @@ import io.github.nguyennhatquang.fashion.Inventory.delivery.Mapper.StockLocation
 import io.github.nguyennhatquang.fashion.Inventory.domain.IRepository.postgres.IStockLocationRepository;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.StockLocation;
 import io.github.nguyennhatquang.fashion.Inventory.usecase.IUseCase.IAdminStockLocationUseCase;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -72,9 +74,9 @@ public class AdminStockLocationUseCase implements IAdminStockLocationUseCase {
     }
 
     @Override
-    public Result<List<StockLocation>, Exception> getAllStockLocations() {
+    public Result<ExactPageResponse<StockLocation>, Exception> getAllStockLocations(ExactPageRequest request) {
         try {
-            List<StockLocation> locations = stockLocationRepository.findAll();
+            ExactPageResponse<StockLocation> locations = stockLocationRepository.getStockLocationExactPage(request);
             return Result.success(locations);
         } catch (Exception e) {
             return Result.error(e);

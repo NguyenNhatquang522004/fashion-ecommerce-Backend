@@ -11,6 +11,8 @@ import io.github.nguyennhatquang.fashion.Inventory.delivery.Mapper.FlashSaleCamp
 import io.github.nguyennhatquang.fashion.Inventory.domain.IRepository.postgres.IFlashSaleCampaignRepository;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.FlashSaleCampaign;
 import io.github.nguyennhatquang.fashion.Inventory.usecase.IUseCase.IAdminFlashSaleCampaignUseCase;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -72,9 +74,9 @@ public class AdminFlashSaleCampaignUseCase implements IAdminFlashSaleCampaignUse
     }
 
     @Override
-    public Result<List<FlashSaleCampaign>, Exception> getAllCampaigns() {
+    public Result<ExactPageResponse<FlashSaleCampaign>, Exception> getAllCampaigns(ExactPageRequest request) {
         try {
-            List<FlashSaleCampaign> campaigns = campaignRepository.findAll();
+            ExactPageResponse<FlashSaleCampaign> campaigns = campaignRepository.getFlashSaleCampaignExactPage(request);
             return Result.success(campaigns);
         } catch (Exception e) {
             return Result.error(e);

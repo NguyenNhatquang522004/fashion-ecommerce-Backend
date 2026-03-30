@@ -10,6 +10,8 @@ import io.github.nguyennhatquang.fashion.Inventory.delivery.Mapper.InventoryLedg
 import io.github.nguyennhatquang.fashion.Inventory.domain.IRepository.postgres.IInventoryLedgerRepository;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.InventoryLedger;
 import io.github.nguyennhatquang.fashion.Inventory.usecase.IUseCase.IAdminInventoryLedgerUseCase;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,9 +48,9 @@ public class AdminInventoryLedgerUseCase implements IAdminInventoryLedgerUseCase
     }
 
     @Override
-    public Result<List<InventoryLedger>, Exception> getAllInventoryLedgers() {
+    public Result<ExactPageResponse<InventoryLedger>, Exception> getAllInventoryLedgers(ExactPageRequest request) {
         try {
-            List<InventoryLedger> ledgers = ledgerRepository.findAll();
+            ExactPageResponse<InventoryLedger> ledgers = ledgerRepository.getInventoryLedgerExactPage(request);
             return Result.success(ledgers);
         } catch (Exception e) {
             return Result.error(e);
