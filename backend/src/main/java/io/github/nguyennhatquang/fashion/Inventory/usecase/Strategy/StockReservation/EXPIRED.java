@@ -3,6 +3,7 @@ package io.github.nguyennhatquang.fashion.Inventory.usecase.Strategy.StockReserv
 import org.springframework.stereotype.Service;
 
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.StockReservation.StockReservationRequest.StockReservationCreateRequestv2;
+import io.github.nguyennhatquang.fashion.Inventory.domain.entity.StockReservation;
 import io.github.nguyennhatquang.fashion.Inventory.usecase.IStrategy.IStrategyStockReservation;
 import io.github.nguyennhatquang.fashion.common.Enum.ReservationStatusEnum;
 import io.github.nguyennhatquang.fashion.common.response.Result;
@@ -17,7 +18,7 @@ public class EXPIRED implements IStrategyStockReservation {
     }
 
     @Override
-    public Result<Void, Exception> execute(StockReservationCreateRequestv2 request) {
+    public Result<StockReservation, Exception> execute(StockReservationCreateRequestv2 request) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'execute'");
     }
