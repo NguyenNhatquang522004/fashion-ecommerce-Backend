@@ -12,12 +12,15 @@ import org.springframework.stereotype.Repository;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface StockReservationRepository extends JpaRepository<StockReservation, UUID> {
 
-    
+    @Query("SELECT u FROM StockReservation u WHERE u.orderId = :orderId AND u.skuCode = :skuCode AND u.warehouseId = :warehouseId")
+    Optional<StockReservation> findByOrderIdAndSkuCodeAndWarehouseId(String orderId, String skuCode, UUID warehouseId);
+
     @Query("SELECT COUNT(u.id) FROM StockReservation u WHERE u.createdAt <= :snapshotTime")
     long countBySnapshot(@Param("snapshotTime") Instant snapshotTime);
 

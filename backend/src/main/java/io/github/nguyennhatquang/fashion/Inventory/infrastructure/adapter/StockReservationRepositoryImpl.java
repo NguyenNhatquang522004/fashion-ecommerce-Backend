@@ -114,4 +114,10 @@ public class StockReservationRepositoryImpl implements IStockReservationReposito
                 .data(responseData)
                 .build();
     }
+
+    @Override
+    public Optional<StockReservation> findByOrderIdAndSkuCodeAndWarehouseId(String orderId, String skuCode,
+            UUID warehouseId) {
+        return repository.findByOrderIdAndSkuCodeAndWarehouseId(orderId, skuCode, warehouseId);
+    }
 }

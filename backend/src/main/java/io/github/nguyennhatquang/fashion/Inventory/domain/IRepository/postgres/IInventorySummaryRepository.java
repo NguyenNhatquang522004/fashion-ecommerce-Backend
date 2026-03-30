@@ -30,5 +30,9 @@ public interface IInventorySummaryRepository {
 
     List<InventorySummary> findAll();
 
+    Optional<InventorySummary> findByWarehouseIdAndSkuCode(UUID warehouseId, String skuCode);
+
+    Optional<InventorySummary> findByWarehouseIdAndSkuCodeForUpdate(UUID warehouseId, String skuCode);
+
     ExactPageResponse<InventorySummary> getInventorySummaryExactPage(ExactPageRequest request);
 }

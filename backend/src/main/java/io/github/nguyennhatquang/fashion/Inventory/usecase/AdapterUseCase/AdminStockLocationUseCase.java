@@ -9,7 +9,9 @@ import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.StockLocation.St
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.StockLocation.StockLocationRequest.StockLocationUpdateRequest;
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Mapper.StockLocationMapper;
 import io.github.nguyennhatquang.fashion.Inventory.domain.IRepository.postgres.IStockLocationRepository;
+import io.github.nguyennhatquang.fashion.Inventory.domain.IRepository.postgres.IWarehouseRepository;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.StockLocation;
+import io.github.nguyennhatquang.fashion.Inventory.domain.entity.Warehouse;
 import io.github.nguyennhatquang.fashion.Inventory.usecase.IUseCase.IAdminStockLocationUseCase;
 import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
@@ -23,11 +25,20 @@ import lombok.extern.slf4j.Slf4j;
 public class AdminStockLocationUseCase implements IAdminStockLocationUseCase {
     private final IStockLocationRepository stockLocationRepository;
     private final StockLocationMapper stockLocationMapper;
+    private final IWarehouseRepository warehouseRepository;
 
     @Override
     public Result<StockLocation, Exception> createStockLocation(StockLocationCreateRequest request) {
         try {
+            if (request.warehouseId() == null) {
+                return Result.error(new Exception("Warehouse ID is required"));
+            }
+            Warehouse warehouse = warehouseRepository.findById(request.warehouseId()).orElse(null);
+            if (warehouse == null) {
+                return Result.error(new Exception("Warehouse not found"));
+            }
             StockLocation location = stockLocationMapper.toEntity(request);
+            location.setWarehouse(warehouse);
             stockLocationRepository.save(location);
             return Result.success(location);
         } catch (Exception e) {

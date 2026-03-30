@@ -9,7 +9,9 @@ import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.InventorySummary
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.InventorySummary.InventorySummaryRequest.InventorySummaryUpdateRequest;
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Mapper.InventorySummaryMapper;
 import io.github.nguyennhatquang.fashion.Inventory.domain.IRepository.postgres.IInventorySummaryRepository;
+import io.github.nguyennhatquang.fashion.Inventory.domain.IRepository.postgres.IWarehouseRepository;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.InventorySummary;
+import io.github.nguyennhatquang.fashion.Inventory.domain.entity.Warehouse;
 import io.github.nguyennhatquang.fashion.Inventory.usecase.IUseCase.IAdminInventorySummaryUseCase;
 import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
@@ -23,11 +25,20 @@ import lombok.extern.slf4j.Slf4j;
 public class AdminInventorySummaryUseCase implements IAdminInventorySummaryUseCase {
     private final IInventorySummaryRepository summaryRepository;
     private final InventorySummaryMapper summaryMapper;
+    private final IWarehouseRepository warehouseRepository;
 
     @Override
     public Result<InventorySummary, Exception> createInventorySummary(InventorySummaryCreateRequest request) {
         try {
+            if (request.warehouseId() == null) {
+                return Result.error(new Exception("Warehouse ID is required"));
+            }
+            Warehouse warehouse = warehouseRepository.findById(request.warehouseId()).orElse(null);
+            if (warehouse == null) {
+                return Result.error(new Exception("Warehouse not found"));
+            }
             InventorySummary summary = summaryMapper.toEntity(request);
+            summary.setWarehouse(warehouse);
             summaryRepository.save(summary);
             return Result.success(summary);
         } catch (Exception e) {

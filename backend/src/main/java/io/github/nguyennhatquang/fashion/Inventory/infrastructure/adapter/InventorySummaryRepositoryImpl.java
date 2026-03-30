@@ -114,4 +114,14 @@ public class InventorySummaryRepositoryImpl implements IInventorySummaryReposito
                 .data(responseData)
                 .build();
     }
+
+    @Override
+    public Optional<InventorySummary> findByWarehouseIdAndSkuCode(UUID warehouseId, String skuCode) {
+        return repository.findByWarehouseIdAndSkuCode(warehouseId, skuCode);
+    }
+
+    @Override
+    public Optional<InventorySummary> findByWarehouseIdAndSkuCodeForUpdate(UUID warehouseId, String skuCode) {
+        return repository.findByWarehouseIdAndSkuCodeForUpdate(warehouseId, skuCode);
+    }
 }

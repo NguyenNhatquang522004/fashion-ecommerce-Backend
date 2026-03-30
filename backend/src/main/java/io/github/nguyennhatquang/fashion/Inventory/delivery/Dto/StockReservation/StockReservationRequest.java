@@ -3,6 +3,7 @@ package io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.StockReservatio
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.experimental.UtilityClass;
 
 import io.github.nguyennhatquang.fashion.common.Enum.ReservationStatusEnum;
@@ -12,29 +13,36 @@ import java.util.UUID;
 
 @UtilityClass
 public class StockReservationRequest {
+        @Builder
+        public record StockReservationCreateRequest(
+                        @NotBlank(message = "Order ID không được để trống") String orderId,
 
-    public record StockReservationCreateRequest(
-            @NotBlank(message = "Order ID không được để trống")
-            String orderId,
+                        @NotBlank(message = "SKU code không được để trống") String skuCode,
 
-            @NotBlank(message = "SKU code không được để trống")
-            String skuCode,
+                        @NotNull(message = "Warehouse ID là bắt buộc") UUID warehouseId,
 
-            @NotNull(message = "Warehouse ID là bắt buộc")
-            UUID warehouseId,
+                        @NotNull(message = "Số lượng là bắt buộc") @Min(value = 1, message = "Số lượng phải ít nhất là 1") Integer quantity,
 
-            @NotNull(message = "Số lượng là bắt buộc")
-            @Min(value = 1, message = "Số lượng phải ít nhất là 1")
-            Integer quantity,
+                        @NotNull(message = "Thời hạn hết hiệu lực là bắt buộc") OffsetDateTime expiresAt) {
+        }
 
-            @NotNull(message = "Thời hạn hết hiệu lực là bắt buộc")
-            OffsetDateTime expiresAt
-    ) {}
+        @Builder
+        public record StockReservationCreateRequestv2(
+                        @NotBlank(message = "Order ID không được để trống") String orderId,
 
-    public record StockReservationUpdateRequest(
-            @NotNull(message = "Trạng thái là bắt buộc")
-            ReservationStatusEnum status,
+                        @NotBlank(message = "SKU code không được để trống") String skuCode,
 
-            OffsetDateTime expiresAt
-    ) {}
+                        @NotNull(message = "Warehouse ID là bắt buộc") UUID warehouseId,
+                        @NotNull(message = "Trạng thái là bắt buộc") ReservationStatusEnum status,
+
+                        @NotNull(message = "Số lượng là bắt buộc") @Min(value = 1, message = "Số lượng phải ít nhất là 1") Integer quantity,
+
+                        @NotNull(message = "Thời hạn hết hiệu lực là bắt buộc") OffsetDateTime expiresAt) {
+        }
+
+        public record StockReservationUpdateRequest(
+                        @NotNull(message = "Trạng thái là bắt buộc") ReservationStatusEnum status,
+
+                        OffsetDateTime expiresAt) {
+        }
 }

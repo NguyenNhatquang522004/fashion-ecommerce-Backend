@@ -33,6 +33,7 @@ import java.util.UUID;
         @Index(name = "idx_reservation_expires", columnList = "expires_at"),
         @Index(name = "idx_reservation_status_exp", columnList = "status, expires_at"),
         @Index(name = "idx_reservation_created_at_id", columnList = "created_at DESC, id DESC"),
+        @Index(name = "idx_reservation_order_sku_warehouse", columnList = "order_id, sku_code, warehouse_id")
 })
 @Getter
 @Setter

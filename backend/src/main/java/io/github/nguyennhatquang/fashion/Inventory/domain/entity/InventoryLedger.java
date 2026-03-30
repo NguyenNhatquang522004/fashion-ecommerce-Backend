@@ -36,6 +36,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Setter
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "UPDATE inventory_ledger SET is_deleted = true WHERE id = ? AND version = ?")
 @SQLRestriction("is_deleted = false")

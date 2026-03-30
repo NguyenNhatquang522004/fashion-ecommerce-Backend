@@ -31,4 +31,6 @@ public interface IStockReservationRepository {
     List<StockReservation> findAll();
 
     ExactPageResponse<StockReservation> getStockReservationExactPage(ExactPageRequest request);
+
+    Optional<StockReservation> findByOrderIdAndSkuCodeAndWarehouseId(String orderId, String skuCode, UUID warehouseId);
 }
