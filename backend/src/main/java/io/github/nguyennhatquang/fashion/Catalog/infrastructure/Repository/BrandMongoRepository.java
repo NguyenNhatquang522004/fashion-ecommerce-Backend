@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.repository.Update;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import io.github.nguyennhatquang.fashion.Catalog.domain.entity.Brand;
+import io.github.nguyennhatquang.fashion.common.shared.IdOnly;
 
 import java.time.Instant;
 import java.time.LocalDateTime;

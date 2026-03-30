@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import io.github.nguyennhatquang.fashion.Catalog.domain.entity.Category;
 import io.github.nguyennhatquang.fashion.Catalog.domain.entity.Product;
 import io.github.nguyennhatquang.fashion.common.Enum.ProductStatusEnum;
+import io.github.nguyennhatquang.fashion.common.shared.IdOnly;
 
 import java.time.Instant;
 import java.util.List;

@@ -29,7 +29,8 @@ import java.util.UUID;
         @Index(name = "idx_ledger_sku_code", columnList = "sku_code"),
         @Index(name = "idx_ledger_reference_id", columnList = "reference_id"),
         @Index(name = "idx_ledger_transaction_type", columnList = "transaction_type"),
-        @Index(name = "idx_ledger_created_at", columnList = "created_at DESC")
+        @Index(name = "idx_ledger_created_at", columnList = "created_at DESC"),
+        @Index(name = "idx_ledger_created_at_id", columnList = "created_at DESC, id DESC"),
 })
 @Getter
 @NoArgsConstructor

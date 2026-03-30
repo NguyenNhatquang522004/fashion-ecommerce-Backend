@@ -25,7 +25,8 @@ import java.util.UUID;
 @Check(constraints = "total_quota > 0")
 @Table(name = "flash_sale_items", indexes = {
         @Index(name = "idx_flash_sale_item_campaign", columnList = "campaign_id"),
-        @Index(name = "idx_flash_sale_item_sku", columnList = "sku_code")
+        @Index(name = "idx_flash_sale_item_sku", columnList = "sku_code"),
+        @Index(name = "idx_flash_sale_item_created_at_id", columnList = "created_at DESC, id DESC"),
 }, uniqueConstraints = {
         @UniqueConstraint(name = "uk_flash_sale_item_campaign_sku", columnNames = { "campaign_id", "sku_code" })
 })

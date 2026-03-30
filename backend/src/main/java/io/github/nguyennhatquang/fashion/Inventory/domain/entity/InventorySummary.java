@@ -26,7 +26,8 @@ import java.util.UUID;
 @Table(name = "inventory_summaries", indexes = {
         @Index(name = "idx_inventory_sku", columnList = "sku_code"),
         @Index(name = "idx_inventory_warehouse_id", columnList = "warehouse_id"),
-        @Index(name = "idx_inventory_warehouse_sku", columnList = "warehouse_id, sku_code")
+        @Index(name = "idx_inventory_warehouse_sku", columnList = "warehouse_id, sku_code"),
+        @Index(name = "idx_inventory_created_at_id", columnList = "created_at DESC, id DESC"),
 }, uniqueConstraints = {
         @UniqueConstraint(name = "uk_inventory_warehouse_sku", columnNames = { "warehouse_id", "sku_code" })
 })

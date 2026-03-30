@@ -15,13 +15,13 @@ import org.springframework.stereotype.Repository;
 import io.github.nguyennhatquang.fashion.Catalog.domain.IRepository.ICategoryRepository;
 import io.github.nguyennhatquang.fashion.Catalog.domain.entity.Category;
 import io.github.nguyennhatquang.fashion.Catalog.infrastructure.Repository.CategoryMongoRepository;
-import io.github.nguyennhatquang.fashion.Catalog.infrastructure.Repository.IdOnly;
 import io.github.nguyennhatquang.fashion.common.Utils.ConvertUtils;
 import io.github.nguyennhatquang.fashion.common.Utils.CursorUtils;
 import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
 import io.github.nguyennhatquang.fashion.common.request.PanigationRequest;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.PanigationResponse;
+import io.github.nguyennhatquang.fashion.common.shared.IdOnly;
 import lombok.RequiredArgsConstructor;
 
 @Repository

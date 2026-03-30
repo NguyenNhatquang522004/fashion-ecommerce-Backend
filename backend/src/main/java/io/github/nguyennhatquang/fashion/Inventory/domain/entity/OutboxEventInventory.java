@@ -33,7 +33,8 @@ import java.util.UUID;
 @Table(name = "outbox_events_inventory", indexes = {
         @Index(name = "idx_outbox_status", columnList = "status"),
         @Index(name = "idx_outbox_aggregate", columnList = "aggregate_type, aggregate_id"),
-        @Index(name = "idx_outbox_created_at", columnList = "created_at DESC")
+        @Index(name = "idx_outbox_created_at", columnList = "created_at DESC"),
+        @Index(name = "idx_outbox_created_at_id", columnList = "created_at DESC, id DESC"),
 })
 @Getter
 @Setter

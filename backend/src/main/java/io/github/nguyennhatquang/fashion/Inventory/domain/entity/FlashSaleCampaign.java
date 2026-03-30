@@ -27,7 +27,8 @@ import java.util.UUID;
 @Check(constraints = "end_time > start_time")
 @Table(name = "flash_sale_campaigns", indexes = {
         @Index(name = "idx_campaign_status", columnList = "status"),
-        @Index(name = "idx_campaign_time_range", columnList = "start_time, end_time")
+        @Index(name = "idx_campaign_time_range", columnList = "start_time, end_time"),
+        @Index(name = "idx_campaign_created_at_id", columnList = "created_at DESC, id DESC"),
 })
 @Getter
 @Setter

@@ -16,7 +16,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "stock_locations", indexes = {
-        @Index(name = "idx_stock_location_warehouse_id", columnList = "warehouse_id")
+        @Index(name = "idx_stock_location_warehouse_id", columnList = "warehouse_id"),
+        @Index(name = "idx_stock_location_created_at_id", columnList = "created_at DESC, id DESC")
 }, uniqueConstraints = {
         @UniqueConstraint(name = "uk_stock_location_position", columnNames = { "warehouse_id", "zone", "aisle", "rack",
                 "shelf" })

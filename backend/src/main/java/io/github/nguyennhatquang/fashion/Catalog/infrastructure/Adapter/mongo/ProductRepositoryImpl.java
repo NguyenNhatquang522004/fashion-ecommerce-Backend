@@ -15,7 +15,7 @@ import org.springframework.stereotype.Repository;
 import io.github.nguyennhatquang.fashion.Catalog.domain.IRepository.IProductRepository;
 
 import io.github.nguyennhatquang.fashion.Catalog.domain.entity.Product;
-import io.github.nguyennhatquang.fashion.Catalog.infrastructure.Repository.IdOnly;
+
 import io.github.nguyennhatquang.fashion.Catalog.infrastructure.Repository.ProductMongoRepository;
 import io.github.nguyennhatquang.fashion.common.Enum.ProductStatusEnum;
 import io.github.nguyennhatquang.fashion.common.Utils.ConvertUtils;
@@ -24,6 +24,7 @@ import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
 import io.github.nguyennhatquang.fashion.common.request.PanigationRequest;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.PanigationResponse;
+import io.github.nguyennhatquang.fashion.common.shared.IdOnly;
 import lombok.RequiredArgsConstructor;
 
 @Repository
@@ -169,7 +170,6 @@ public class ProductRepositoryImpl implements IProductRepository {
                     .map(IdOnly::getId)
                     .toList();
 
-            // Bước B: Bốc hàng theo đúng ID đã chốt
             if (!ids.isEmpty()) {
                 responseData = productMongoRepository.fetchFullDataByIds(ids);
             }

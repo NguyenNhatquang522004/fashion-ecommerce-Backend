@@ -15,7 +15,7 @@ import org.springframework.stereotype.Repository;
 import io.github.nguyennhatquang.fashion.Catalog.domain.IRepository.ISkuVariantRepository;
 import io.github.nguyennhatquang.fashion.Catalog.domain.entity.Product;
 import io.github.nguyennhatquang.fashion.Catalog.domain.entity.SkuVariant;
-import io.github.nguyennhatquang.fashion.Catalog.infrastructure.Repository.IdOnly;
+
 import io.github.nguyennhatquang.fashion.Catalog.infrastructure.Repository.SkuVariantMongoRepository;
 import io.github.nguyennhatquang.fashion.common.Utils.ConvertUtils;
 import io.github.nguyennhatquang.fashion.common.Utils.CursorUtils;
@@ -23,6 +23,7 @@ import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
 import io.github.nguyennhatquang.fashion.common.request.PanigationRequest;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.PanigationResponse;
+import io.github.nguyennhatquang.fashion.common.shared.IdOnly;
 import lombok.RequiredArgsConstructor;
 
 @Repository
@@ -78,8 +79,6 @@ public class SkuVariantRepositoryImpl implements ISkuVariantRepository {
 
     @Override
     public void softDeleteByProductId(String productId) {
-        // 1 lệnh duy nhất, 1 chuyến xe duy nhất, MongoDb tự động cập nhật hàng loạt
-        // (updateMany)
         skuVariantMongoRepository.softDeleteAllByProductId(productId);
     }
 
