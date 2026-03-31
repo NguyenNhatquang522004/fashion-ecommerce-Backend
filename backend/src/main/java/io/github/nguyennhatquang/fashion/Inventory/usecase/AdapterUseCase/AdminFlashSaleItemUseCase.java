@@ -8,7 +8,9 @@ import org.springframework.stereotype.Service;
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.FlashSaleItem.FlashSaleItemRequest.FlashSaleItemCreateRequest;
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.FlashSaleItem.FlashSaleItemRequest.FlashSaleItemUpdateRequest;
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Mapper.FlashSaleItemMapper;
+import io.github.nguyennhatquang.fashion.Inventory.domain.IRepository.postgres.IFlashSaleCampaignRepository;
 import io.github.nguyennhatquang.fashion.Inventory.domain.IRepository.postgres.IFlashSaleItemRepository;
+import io.github.nguyennhatquang.fashion.Inventory.domain.entity.FlashSaleCampaign;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.FlashSaleItem;
 import io.github.nguyennhatquang.fashion.Inventory.usecase.IUseCase.IAdminFlashSaleItemUseCase;
 import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
@@ -23,11 +25,17 @@ import lombok.extern.slf4j.Slf4j;
 public class AdminFlashSaleItemUseCase implements IAdminFlashSaleItemUseCase {
     private final IFlashSaleItemRepository flashSaleItemRepository;
     private final FlashSaleItemMapper flashSaleItemMapper;
+    private final IFlashSaleCampaignRepository flashSaleCampaignRepository;
 
     @Override
     public Result<FlashSaleItem, Exception> createFlashSaleItem(FlashSaleItemCreateRequest request) {
         try {
+            FlashSaleCampaign campaign = flashSaleCampaignRepository.findById(request.campaignId()).orElse(null);
+            if (campaign == null) {
+                return Result.error(new Exception("FlashSaleCampaign not found"));
+            }
             FlashSaleItem item = flashSaleItemMapper.toEntity(request);
+            item.setCampaign(campaign);
             flashSaleItemRepository.save(item);
             return Result.success(item);
         } catch (Exception e) {
