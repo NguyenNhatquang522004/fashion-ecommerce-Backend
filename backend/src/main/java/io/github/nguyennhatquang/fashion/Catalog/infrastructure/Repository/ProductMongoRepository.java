@@ -36,9 +36,6 @@ public interface ProductMongoRepository extends MongoRepository<Product, String>
         @Query("{ 'category_ids': [ ?0 ], 'is_deleted': false }")
         List<Product> findProductsWithExactlyOneSpecificCategory(String categoryId);
 
-        @Query(value = "{ 'created_at' : { $lte: ?0 } }", count = true)
-        long countBySnapshot(Instant snapshotTime);
-
         @Query("{ '_id': { $in: ?0 } }")
         @Update("{ '$set': { 'isDeleted': true } }")
         void softDeleteAllByIds(List<String> productIds);
@@ -50,6 +47,9 @@ public interface ProductMongoRepository extends MongoRepository<Product, String>
         @Query("{ 'slug' : ?0 }")
         @Update("{ '$set' : { 'isDeleted' : true } }")
         void softDeleteBySlug(String slug);
+
+        @Query(value = "{ 'created_at' : { $lte: ?0 } }", count = true)
+        long countBySnapshot(Instant snapshotTime);
 
         // 2. Bước A: Lấy ID siêu tốc (Covered Query). fields = "{ '_id': 1 }" là chìa
         // khóa!

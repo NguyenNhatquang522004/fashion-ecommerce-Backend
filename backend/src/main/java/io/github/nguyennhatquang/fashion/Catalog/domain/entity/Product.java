@@ -6,6 +6,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -33,7 +34,14 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@CompoundIndex(name = "snapshot_idx", def = "{'created_at': -1, '_id': -1}")
+@CompoundIndexes({
+        // Index gốc bạn đã có (dùng khi client không truyền sortBy, mặc định là
+        // createdAt)
+        @CompoundIndex(name = "snapshot_idx_created", def = "{'createdAt': -1, '_id': -1}"),
+
+        // Index bổ sung NẾU bạn cho phép sort theo basePrice
+        @CompoundIndex(name = "snapshot_idx_price", def = "{'basePrice': 1, 'createdAt': -1, '_id': -1}")
+})
 public class Product {
     @Id
     private String id;
