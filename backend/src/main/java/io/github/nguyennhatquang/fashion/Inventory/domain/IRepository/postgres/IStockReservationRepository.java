@@ -5,6 +5,7 @@ import io.github.nguyennhatquang.fashion.Inventory.domain.entity.StockReservatio
 import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,4 +34,7 @@ public interface IStockReservationRepository {
     ExactPageResponse<StockReservation> getStockReservationExactPage(ExactPageRequest request);
 
     Optional<StockReservation> findByOrderIdAndSkuCodeAndWarehouseId(String orderId, String skuCode, UUID warehouseId);
+
+    int expireExpiredReservations(OffsetDateTime now);
+
 }

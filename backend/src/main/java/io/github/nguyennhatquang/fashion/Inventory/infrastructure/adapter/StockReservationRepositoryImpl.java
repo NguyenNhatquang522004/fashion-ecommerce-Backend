@@ -16,6 +16,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -119,5 +120,10 @@ public class StockReservationRepositoryImpl implements IStockReservationReposito
     public Optional<StockReservation> findByOrderIdAndSkuCodeAndWarehouseId(String orderId, String skuCode,
             UUID warehouseId) {
         return repository.findByOrderIdAndSkuCodeAndWarehouseId(orderId, skuCode, warehouseId);
+    }
+
+    @Override
+    public int expireExpiredReservations(OffsetDateTime now) {
+        return repository.expireExpiredReservations(now);
     }
 }

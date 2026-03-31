@@ -31,4 +31,6 @@ public interface IOutboxEventInventoryRepository {
     List<OutboxEventInventory> findAll();
 
     ExactPageResponse<OutboxEventInventory> getOutboxEventInventoryExactPage(ExactPageRequest request);
+
+    OutboxEventInventory findByAggregateId(String aggregateId);
 }

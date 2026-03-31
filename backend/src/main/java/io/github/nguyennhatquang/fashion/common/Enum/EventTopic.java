@@ -3,6 +3,8 @@ package io.github.nguyennhatquang.fashion.common.Enum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import io.github.nguyennhatquang.fashion.Inventory.domain.entity.StockReservation;
+
 /**
  * Represents Kafka topic names used for inter-service messaging (pre-existing
  * enum).
@@ -11,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * Examples: "order-created", "payment-processed", "inventory-reserved", etc.
  */
 public enum EventTopic {
-
+    StockReservation_Clear("stock-reservation", 3, 1),
     BRAND_DELETE("brand-delete", 3, 1),
     ORDER_CREATED("order-created", 3, 1),
     PAYMENT_PROCESSED("payment-processed", 3, 1),
@@ -27,6 +29,7 @@ public enum EventTopic {
         public static final String BRAND_DELETE = "brand-delete";
         public static final String ORDER_CREATED = "order-created";
         public static final String PAYMENT_PROCESSED = "payment-processed";
+        public static final String STOCK_RESERVATION_CLEAR = "stock-reservation-clear";
         // ...
     }
 

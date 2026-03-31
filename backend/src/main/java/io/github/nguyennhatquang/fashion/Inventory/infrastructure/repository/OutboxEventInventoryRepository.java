@@ -17,7 +17,6 @@ import java.util.UUID;
 @Repository
 public interface OutboxEventInventoryRepository extends JpaRepository<OutboxEventInventory, UUID> {
 
-    
     @Query("SELECT COUNT(u.id) FROM OutboxEventInventory u WHERE u.createdAt <= :snapshotTime")
     long countBySnapshot(@Param("snapshotTime") Instant snapshotTime);
 
@@ -30,4 +29,7 @@ public interface OutboxEventInventoryRepository extends JpaRepository<OutboxEven
     // 3. Lấy Full Data từ tập ID đã lọc (Sắp xếp lại trên DB để đảm bảo thứ tự)
     @Query("SELECT u FROM OutboxEventInventory u WHERE u.id IN :ids ORDER BY u.createdAt DESC, u.id DESC")
     List<OutboxEventInventory> fetchFullDataByIds(@Param("ids") List<UUID> ids);
+
+    @Query("SELECT u FROM OutboxEventInventory u WHERE u.aggregateId = :aggregateId")
+    OutboxEventInventory findByAggregateId(@Param("aggregateId") String aggregateId);
 }

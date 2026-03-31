@@ -114,4 +114,9 @@ public class OutboxEventInventoryRepositoryImpl implements IOutboxEventInventory
                 .data(responseData)
                 .build();
     }
+
+    @Override
+    public OutboxEventInventory findByAggregateId(String aggregateId) {
+        return repository.findByAggregateId(aggregateId);
+    }
 }
