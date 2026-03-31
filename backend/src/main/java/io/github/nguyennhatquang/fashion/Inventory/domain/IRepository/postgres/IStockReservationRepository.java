@@ -2,6 +2,7 @@ package io.github.nguyennhatquang.fashion.Inventory.domain.IRepository.postgres;
 
 import io.github.nguyennhatquang.fashion.Catalog.domain.entity.Product;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.StockReservation;
+import io.github.nguyennhatquang.fashion.common.Enum.ReservationStatusEnum;
 import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 
@@ -36,5 +37,10 @@ public interface IStockReservationRepository {
     Optional<StockReservation> findByOrderIdAndSkuCodeAndWarehouseId(String orderId, String skuCode, UUID warehouseId);
 
     int expireExpiredReservations(OffsetDateTime now);
+
+    List<StockReservation> findExpiredReservations(ReservationStatusEnum status, OffsetDateTime currentTime);
+
+    List<StockReservation> findExpiredReservationsWithLimit(ReservationStatusEnum status, OffsetDateTime currentTime,
+            org.springframework.data.domain.Pageable pageable);
 
 }

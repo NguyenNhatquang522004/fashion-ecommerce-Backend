@@ -4,6 +4,7 @@ import io.github.nguyennhatquang.fashion.Inventory.domain.IRepository.postgres.I
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.StockLocation;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.StockReservation;
 import io.github.nguyennhatquang.fashion.Inventory.infrastructure.repository.StockReservationRepository;
+import io.github.nguyennhatquang.fashion.common.Enum.ReservationStatusEnum;
 import io.github.nguyennhatquang.fashion.common.Utils.ConvertUtils;
 import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
@@ -125,5 +126,18 @@ public class StockReservationRepositoryImpl implements IStockReservationReposito
     @Override
     public int expireExpiredReservations(OffsetDateTime now) {
         return repository.expireExpiredReservations(now);
+
+    }
+
+    @Override
+    public List<StockReservation> findExpiredReservations(ReservationStatusEnum status, OffsetDateTime currentTime) {
+        return repository.findExpiredReservations(status, currentTime);
+    }
+
+    @Override
+    public List<StockReservation> findExpiredReservationsWithLimit(ReservationStatusEnum status,
+            OffsetDateTime currentTime,
+            org.springframework.data.domain.Pageable pageable) {
+        return repository.findExpiredReservationsWithLimit(status, currentTime, pageable);
     }
 }

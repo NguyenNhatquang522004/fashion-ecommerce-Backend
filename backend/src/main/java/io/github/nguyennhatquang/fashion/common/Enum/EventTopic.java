@@ -30,6 +30,7 @@ public enum EventTopic {
         public static final String ORDER_CREATED = "order-created";
         public static final String PAYMENT_PROCESSED = "payment-processed";
         public static final String STOCK_RESERVATION_CLEAR = "stock-reservation-clear";
+        public static final String ORDER_CANCELLED = "order-cancelled";
         // ...
     }
 
