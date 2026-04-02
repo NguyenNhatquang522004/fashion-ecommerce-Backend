@@ -2,6 +2,7 @@ package io.github.nguyennhatquang.fashion.Inventory.usecase.AdapterUseCase;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
@@ -11,7 +12,8 @@ import io.github.nguyennhatquang.fashion.Inventory.delivery.Mapper.WarehouseMapp
 import io.github.nguyennhatquang.fashion.Inventory.domain.IRepository.postgres.IWarehouseRepository;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.Warehouse;
 import io.github.nguyennhatquang.fashion.Inventory.usecase.IUseCase.IAdminWarehouseUseCase;
-import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.infrastructure.Function.JpaExactPagePaginationService;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequestv2;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,14 @@ import lombok.extern.slf4j.Slf4j;
 public class AdminWarehouseUseCase implements IAdminWarehouseUseCase {
     private final IWarehouseRepository warehouseRepository;
     private final WarehouseMapper warehouseMapper;
+
+        private final JpaExactPagePaginationService paginationService;
+
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
+            "createdAt", "updatedAt");
+
+    private static final Set<String> ALLOWED_FILTER_FIELDS = Set.of(
+            "code", "name");
 
     @Override
     public Result<Warehouse, Exception> createWarehouse(WarehouseCreateRequest request) {
@@ -74,10 +84,15 @@ public class AdminWarehouseUseCase implements IAdminWarehouseUseCase {
     }
 
     @Override
-    public Result<ExactPageResponse<Warehouse>, Exception> getAllWarehouses(ExactPageRequest request) {
+    public Result<ExactPageResponse<Warehouse>, Exception> getAllWarehouses(ExactPageRequestv2 request) {
         try {
-            ExactPageResponse<Warehouse> warehouses = warehouseRepository.getWarehouseExactPage(request);
-            return Result.success(warehouses);
+            ExactPageResponse<Warehouse> response = paginationService.execute(
+                    request,
+                    Warehouse.class,
+                    ALLOWED_SORT_FIELDS,
+                    ALLOWED_FILTER_FIELDS
+            );
+            return Result.success(response);
         } catch (Exception e) {
             return Result.error(e);
         }

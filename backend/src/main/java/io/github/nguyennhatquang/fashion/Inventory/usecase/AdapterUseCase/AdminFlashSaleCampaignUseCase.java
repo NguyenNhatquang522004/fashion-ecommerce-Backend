@@ -2,6 +2,7 @@ package io.github.nguyennhatquang.fashion.Inventory.usecase.AdapterUseCase;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
@@ -11,7 +12,8 @@ import io.github.nguyennhatquang.fashion.Inventory.delivery.Mapper.FlashSaleCamp
 import io.github.nguyennhatquang.fashion.Inventory.domain.IRepository.postgres.IFlashSaleCampaignRepository;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.FlashSaleCampaign;
 import io.github.nguyennhatquang.fashion.Inventory.usecase.IUseCase.IAdminFlashSaleCampaignUseCase;
-import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.infrastructure.Function.JpaExactPagePaginationService;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequestv2;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,14 @@ import lombok.extern.slf4j.Slf4j;
 public class AdminFlashSaleCampaignUseCase implements IAdminFlashSaleCampaignUseCase {
     private final IFlashSaleCampaignRepository campaignRepository;
     private final FlashSaleCampaignMapper campaignMapper;
+
+        private final JpaExactPagePaginationService paginationService;
+
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
+            "createdAt", "updatedAt", "startTime", "endTime");
+
+    private static final Set<String> ALLOWED_FILTER_FIELDS = Set.of(
+            "status", "name");
 
     @Override
     public Result<FlashSaleCampaign, Exception> createCampaign(FlashSaleCampaignCreateRequest request) {
@@ -74,10 +84,15 @@ public class AdminFlashSaleCampaignUseCase implements IAdminFlashSaleCampaignUse
     }
 
     @Override
-    public Result<ExactPageResponse<FlashSaleCampaign>, Exception> getAllCampaigns(ExactPageRequest request) {
+    public Result<ExactPageResponse<FlashSaleCampaign>, Exception> getAllCampaigns(ExactPageRequestv2 request) {
         try {
-            ExactPageResponse<FlashSaleCampaign> campaigns = campaignRepository.getFlashSaleCampaignExactPage(request);
-            return Result.success(campaigns);
+            ExactPageResponse<FlashSaleCampaign> response = paginationService.execute(
+                    request,
+                    FlashSaleCampaign.class,
+                    ALLOWED_SORT_FIELDS,
+                    ALLOWED_FILTER_FIELDS
+            );
+            return Result.success(response);
         } catch (Exception e) {
             return Result.error(e);
         }

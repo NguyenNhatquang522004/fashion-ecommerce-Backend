@@ -19,7 +19,7 @@ import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.InventorySummary
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Mapper.InventorySummaryMapper;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.InventorySummary;
 import io.github.nguyennhatquang.fashion.Inventory.usecase.IUseCase.IAdminInventorySummaryUseCase;
-import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequestv2;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 import io.github.nguyennhatquang.fashion.common.response.SystemRes;
@@ -103,7 +103,7 @@ public class AdminInventorySummaryHandler {
     }
 
     @GetMapping("/get-page")
-    public ResponseEntity<SystemRes> getPageInventorySummary(@Validated ExactPageRequest request) {
+    public ResponseEntity<SystemRes> getPageInventorySummary(@Validated ExactPageRequestv2 request) {
         try {
             Result<ExactPageResponse<InventorySummary>, Exception> result = adminInventorySummaryUseCase.getAllInventorySummaries(request);
             if (result.hasError()) {

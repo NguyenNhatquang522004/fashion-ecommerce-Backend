@@ -2,6 +2,7 @@ package io.github.nguyennhatquang.fashion.Inventory.usecase.AdapterUseCase;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
@@ -11,7 +12,8 @@ import io.github.nguyennhatquang.fashion.Inventory.delivery.Mapper.StockReservat
 import io.github.nguyennhatquang.fashion.Inventory.domain.IRepository.postgres.IStockReservationRepository;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.StockReservation;
 import io.github.nguyennhatquang.fashion.Inventory.usecase.IUseCase.IAdminStockReservationUseCase;
-import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.infrastructure.Function.JpaExactPagePaginationService;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequestv2;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,14 @@ import lombok.extern.slf4j.Slf4j;
 public class AdminStockReservationUseCase implements IAdminStockReservationUseCase {
     private final IStockReservationRepository reservationRepository;
     private final StockReservationMapper reservationMapper;
+
+        private final JpaExactPagePaginationService paginationService;
+
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
+            "createdAt", "updatedAt", "expiresAt", "quantity");
+
+    private static final Set<String> ALLOWED_FILTER_FIELDS = Set.of(
+            "orderId", "skuCode", "status");
 
     @Override
     public Result<StockReservation, Exception> createStockReservation(StockReservationCreateRequest request) {
@@ -74,10 +84,15 @@ public class AdminStockReservationUseCase implements IAdminStockReservationUseCa
     }
 
     @Override
-    public Result<ExactPageResponse<StockReservation>, Exception> getAllStockReservations(ExactPageRequest request) {
+    public Result<ExactPageResponse<StockReservation>, Exception> getAllStockReservations(ExactPageRequestv2 request) {
         try {
-            ExactPageResponse<StockReservation> reservations = reservationRepository.getStockReservationExactPage(request);
-            return Result.success(reservations);
+            ExactPageResponse<StockReservation> response = paginationService.execute(
+                    request,
+                    StockReservation.class,
+                    ALLOWED_SORT_FIELDS,
+                    ALLOWED_FILTER_FIELDS
+            );
+            return Result.success(response);
         } catch (Exception e) {
             return Result.error(e);
         }

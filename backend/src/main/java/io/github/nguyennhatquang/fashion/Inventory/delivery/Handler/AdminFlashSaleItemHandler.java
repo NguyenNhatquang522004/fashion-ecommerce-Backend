@@ -19,7 +19,7 @@ import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.FlashSaleItem.Fl
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Mapper.FlashSaleItemMapper;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.FlashSaleItem;
 import io.github.nguyennhatquang.fashion.Inventory.usecase.IUseCase.IAdminFlashSaleItemUseCase;
-import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequestv2;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 import io.github.nguyennhatquang.fashion.common.response.SystemRes;
@@ -103,7 +103,7 @@ public class AdminFlashSaleItemHandler {
     }
 
     @GetMapping("/get-page")
-    public ResponseEntity<SystemRes> getPageFlashSaleItem(@Validated ExactPageRequest request) {
+    public ResponseEntity<SystemRes> getPageFlashSaleItem(@Validated ExactPageRequestv2 request) {
         try {
             Result<ExactPageResponse<FlashSaleItem>, Exception> result = adminFlashSaleItemUseCase.getAllFlashSaleItems(request);
             if (result.hasError()) {

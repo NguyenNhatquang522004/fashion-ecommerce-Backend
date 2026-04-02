@@ -2,6 +2,7 @@ package io.github.nguyennhatquang.fashion.Inventory.usecase.AdapterUseCase;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
@@ -12,7 +13,8 @@ import io.github.nguyennhatquang.fashion.Inventory.domain.IRepository.postgres.I
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.InventorySummary;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.OutboxEventInventory;
 import io.github.nguyennhatquang.fashion.Inventory.usecase.IUseCase.IAdminOutboxEventInventoryUseCase;
-import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.infrastructure.Function.JpaExactPagePaginationService;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequestv2;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,14 @@ import lombok.extern.slf4j.Slf4j;
 public class AdminOutboxEventInventoryUseCase implements IAdminOutboxEventInventoryUseCase {
     private final IOutboxEventInventoryRepository outboxRepository;
     private final OutboxEventInventoryMapper outboxMapper;
+
+        private final JpaExactPagePaginationService paginationService;
+
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
+            "createdAt", "updatedAt");
+
+    private static final Set<String> ALLOWED_FILTER_FIELDS = Set.of(
+            "aggregateId", "aggregateType", "type");
 
     @Override
     public Result<OutboxEventInventory, Exception> createOutboxEvent(OutboxEventInventoryCreateRequest request) {
@@ -66,10 +76,15 @@ public class AdminOutboxEventInventoryUseCase implements IAdminOutboxEventInvent
     }
 
     @Override
-    public Result<ExactPageResponse<OutboxEventInventory>, Exception> getAllOutboxEvents(ExactPageRequest request) {
+    public Result<ExactPageResponse<OutboxEventInventory>, Exception> getAllOutboxEvents(ExactPageRequestv2 request) {
         try {
-            ExactPageResponse<OutboxEventInventory> events = outboxRepository.getOutboxEventInventoryExactPage(request);
-            return Result.success(events);
+            ExactPageResponse<OutboxEventInventory> response = paginationService.execute(
+                    request,
+                    OutboxEventInventory.class,
+                    ALLOWED_SORT_FIELDS,
+                    ALLOWED_FILTER_FIELDS
+            );
+            return Result.success(response);
         } catch (Exception e) {
             return Result.error(e);
         }

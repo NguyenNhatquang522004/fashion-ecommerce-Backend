@@ -2,6 +2,7 @@ package io.github.nguyennhatquang.fashion.Inventory.usecase.AdapterUseCase;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
@@ -13,7 +14,8 @@ import io.github.nguyennhatquang.fashion.Inventory.domain.IRepository.postgres.I
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.StockLocation;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.Warehouse;
 import io.github.nguyennhatquang.fashion.Inventory.usecase.IUseCase.IAdminStockLocationUseCase;
-import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.infrastructure.Function.JpaExactPagePaginationService;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequestv2;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,14 @@ public class AdminStockLocationUseCase implements IAdminStockLocationUseCase {
     private final IStockLocationRepository stockLocationRepository;
     private final StockLocationMapper stockLocationMapper;
     private final IWarehouseRepository warehouseRepository;
+
+        private final JpaExactPagePaginationService paginationService;
+
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
+            "createdAt", "updatedAt");
+
+    private static final Set<String> ALLOWED_FILTER_FIELDS = Set.of(
+            "zone", "aisle", "rack");
 
     @Override
     public Result<StockLocation, Exception> createStockLocation(StockLocationCreateRequest request) {
@@ -85,10 +95,15 @@ public class AdminStockLocationUseCase implements IAdminStockLocationUseCase {
     }
 
     @Override
-    public Result<ExactPageResponse<StockLocation>, Exception> getAllStockLocations(ExactPageRequest request) {
+    public Result<ExactPageResponse<StockLocation>, Exception> getAllStockLocations(ExactPageRequestv2 request) {
         try {
-            ExactPageResponse<StockLocation> locations = stockLocationRepository.getStockLocationExactPage(request);
-            return Result.success(locations);
+            ExactPageResponse<StockLocation> response = paginationService.execute(
+                    request,
+                    StockLocation.class,
+                    ALLOWED_SORT_FIELDS,
+                    ALLOWED_FILTER_FIELDS
+            );
+            return Result.success(response);
         } catch (Exception e) {
             return Result.error(e);
         }

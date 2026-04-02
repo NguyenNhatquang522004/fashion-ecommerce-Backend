@@ -6,7 +6,7 @@ import java.util.UUID;
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.FlashSaleItem.FlashSaleItemRequest.FlashSaleItemCreateRequest;
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.FlashSaleItem.FlashSaleItemRequest.FlashSaleItemUpdateRequest;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.FlashSaleItem;
-import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequestv2;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 
@@ -19,5 +19,5 @@ public interface IAdminFlashSaleItemUseCase {
 
     Result<FlashSaleItem, Exception> getFlashSaleItemById(UUID id);
 
-    Result<ExactPageResponse<FlashSaleItem>, Exception> getAllFlashSaleItems(ExactPageRequest request);
+    Result<ExactPageResponse<FlashSaleItem>, Exception> getAllFlashSaleItems(ExactPageRequestv2 request);
 }

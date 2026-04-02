@@ -19,7 +19,7 @@ import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.StockReservation
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Mapper.StockReservationMapper;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.StockReservation;
 import io.github.nguyennhatquang.fashion.Inventory.usecase.IUseCase.IAdminStockReservationUseCase;
-import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequestv2;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 import io.github.nguyennhatquang.fashion.common.response.SystemRes;
@@ -103,7 +103,7 @@ public class AdminStockReservationHandler {
     }
 
     @GetMapping("/get-page")
-    public ResponseEntity<SystemRes> getPageStockReservation(@Validated ExactPageRequest request) {
+    public ResponseEntity<SystemRes> getPageStockReservation(@Validated ExactPageRequestv2 request) {
         try {
             Result<ExactPageResponse<StockReservation>, Exception> result = adminStockReservationUseCase.getAllStockReservations(request);
             if (result.hasError()) {

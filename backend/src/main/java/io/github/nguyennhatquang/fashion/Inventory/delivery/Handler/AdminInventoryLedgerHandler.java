@@ -17,7 +17,7 @@ import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.InventoryLedger.
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Mapper.InventoryLedgerMapper;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.InventoryLedger;
 import io.github.nguyennhatquang.fashion.Inventory.usecase.IUseCase.IAdminInventoryLedgerUseCase;
-import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequestv2;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 import io.github.nguyennhatquang.fashion.common.response.SystemRes;
@@ -67,7 +67,7 @@ public class AdminInventoryLedgerHandler {
     }
 
     @GetMapping("/get-page")
-    public ResponseEntity<SystemRes> getPageInventoryLedger(@Validated ExactPageRequest request) {
+    public ResponseEntity<SystemRes> getPageInventoryLedger(@Validated ExactPageRequestv2 request) {
         try {
             Result<ExactPageResponse<InventoryLedger>, Exception> result = adminInventoryLedgerUseCase.getAllInventoryLedgers(request);
             if (result.hasError()) {

@@ -2,6 +2,7 @@ package io.github.nguyennhatquang.fashion.Inventory.usecase.AdapterUseCase;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
@@ -13,7 +14,8 @@ import io.github.nguyennhatquang.fashion.Inventory.domain.IRepository.postgres.I
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.FlashSaleCampaign;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.FlashSaleItem;
 import io.github.nguyennhatquang.fashion.Inventory.usecase.IUseCase.IAdminFlashSaleItemUseCase;
-import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.infrastructure.Function.JpaExactPagePaginationService;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequestv2;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,14 @@ public class AdminFlashSaleItemUseCase implements IAdminFlashSaleItemUseCase {
     private final IFlashSaleItemRepository flashSaleItemRepository;
     private final FlashSaleItemMapper flashSaleItemMapper;
     private final IFlashSaleCampaignRepository flashSaleCampaignRepository;
+
+        private final JpaExactPagePaginationService paginationService;
+
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
+            "createdAt", "updatedAt", "promotionalPrice", "totalQuota");
+
+    private static final Set<String> ALLOWED_FILTER_FIELDS = Set.of(
+            "skuCode");
 
     @Override
     public Result<FlashSaleItem, Exception> createFlashSaleItem(FlashSaleItemCreateRequest request) {
@@ -82,10 +92,15 @@ public class AdminFlashSaleItemUseCase implements IAdminFlashSaleItemUseCase {
     }
 
     @Override
-    public Result<ExactPageResponse<FlashSaleItem>, Exception> getAllFlashSaleItems(ExactPageRequest request) {
+    public Result<ExactPageResponse<FlashSaleItem>, Exception> getAllFlashSaleItems(ExactPageRequestv2 request) {
         try {
-            ExactPageResponse<FlashSaleItem> items = flashSaleItemRepository.getFlashSaleItemExactPage(request);
-            return Result.success(items);
+            ExactPageResponse<FlashSaleItem> response = paginationService.execute(
+                    request,
+                    FlashSaleItem.class,
+                    ALLOWED_SORT_FIELDS,
+                    ALLOWED_FILTER_FIELDS
+            );
+            return Result.success(response);
         } catch (Exception e) {
             return Result.error(e);
         }

@@ -19,7 +19,7 @@ import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.StockLocation.St
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Mapper.StockLocationMapper;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.StockLocation;
 import io.github.nguyennhatquang.fashion.Inventory.usecase.IUseCase.IAdminStockLocationUseCase;
-import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequestv2;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 import io.github.nguyennhatquang.fashion.common.response.SystemRes;
@@ -103,7 +103,7 @@ public class AdminStockLocationHandler {
     }
 
     @GetMapping("/get-page")
-    public ResponseEntity<SystemRes> getPageStockLocation(@Validated ExactPageRequest request) {
+    public ResponseEntity<SystemRes> getPageStockLocation(@Validated ExactPageRequestv2 request) {
         try {
             Result<ExactPageResponse<StockLocation>, Exception> result = adminStockLocationUseCase.getAllStockLocations(request);
             if (result.hasError()) {

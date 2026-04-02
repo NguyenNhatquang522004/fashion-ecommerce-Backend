@@ -18,7 +18,7 @@ import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.OutboxEventInven
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Mapper.OutboxEventInventoryMapper;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.OutboxEventInventory;
 import io.github.nguyennhatquang.fashion.Inventory.usecase.IUseCase.IAdminOutboxEventInventoryUseCase;
-import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequestv2;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 import io.github.nguyennhatquang.fashion.common.response.SystemRes;
@@ -86,7 +86,7 @@ public class AdminOutboxEventInventoryHandler {
     }
 
     @GetMapping("/get-page")
-    public ResponseEntity<SystemRes> getPageOutboxEvent(@Validated ExactPageRequest request) {
+    public ResponseEntity<SystemRes> getPageOutboxEvent(@Validated ExactPageRequestv2 request) {
         try {
             Result<ExactPageResponse<OutboxEventInventory>, Exception> result = adminOutboxEventInventoryUseCase.getAllOutboxEvents(request);
             if (result.hasError()) {

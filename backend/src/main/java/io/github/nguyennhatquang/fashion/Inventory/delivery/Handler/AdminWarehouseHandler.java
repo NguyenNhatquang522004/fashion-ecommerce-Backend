@@ -19,7 +19,7 @@ import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.Warehouse.Wareho
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Mapper.WarehouseMapper;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.Warehouse;
 import io.github.nguyennhatquang.fashion.Inventory.usecase.IUseCase.IAdminWarehouseUseCase;
-import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequestv2;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 import io.github.nguyennhatquang.fashion.common.response.SystemRes;
@@ -103,7 +103,7 @@ public class AdminWarehouseHandler {
     }
 
     @GetMapping("/get-page")
-    public ResponseEntity<SystemRes> getPageWarehouse(@Validated ExactPageRequest request) {
+    public ResponseEntity<SystemRes> getPageWarehouse(@Validated ExactPageRequestv2 request) {
         try {
             Result<ExactPageResponse<Warehouse>, Exception> result = adminWarehouseUseCase.getAllWarehouses(request);
             if (result.hasError()) {

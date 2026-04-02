@@ -6,7 +6,7 @@ import java.util.UUID;
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.Warehouse.WarehouseRequest.WarehouseCreateRequest;
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.Warehouse.WarehouseRequest.WarehouseUpdateRequest;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.Warehouse;
-import io.github.nguyennhatquang.fashion.common.request.ExactPageRequest;
+import io.github.nguyennhatquang.fashion.common.request.ExactPageRequestv2;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 
@@ -19,5 +19,5 @@ public interface IAdminWarehouseUseCase {
 
     Result<Warehouse, Exception> getWarehouseById(UUID id);
 
-    Result<ExactPageResponse<Warehouse>, Exception> getAllWarehouses(ExactPageRequest request);
+    Result<ExactPageResponse<Warehouse>, Exception> getAllWarehouses(ExactPageRequestv2 request);
 }
