@@ -1,16 +1,19 @@
 package io.github.nguyennhatquang.fashion.Order.delivery.Mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
+import io.github.nguyennhatquang.fashion.Order.delivery.Dto.OrderItem.OrderItemRequest;
 import io.github.nguyennhatquang.fashion.Order.delivery.Dto.OrderItem.OrderItemRequest.OrderItemCreateRequest;
 import io.github.nguyennhatquang.fashion.Order.delivery.Dto.OrderItem.OrderItemRequest.OrderItemUpdateRequest;
 import io.github.nguyennhatquang.fashion.Order.delivery.Dto.OrderItem.OrderItemResponse;
 import io.github.nguyennhatquang.fashion.Order.domain.entity.OrderItem;
+import io.github.nguyennhatquang.fashion.common.Utils.ParseUtils;
 
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface OrderItemMapper {
@@ -36,4 +39,8 @@ public interface OrderItemMapper {
     OrderItemResponse toResponse(OrderItem entity);
 
     List<OrderItemResponse> toResponseList(List<OrderItem> entities);
+
+    default Map<String, Object> mapVariantAttributes(OrderItemRequest.VariantAttributesDto value) {
+        return ParseUtils.toVariantAttributesMap(value);
+    }
 }

@@ -1,8 +1,11 @@
 package io.github.nguyennhatquang.fashion.common.Utils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
+import io.github.nguyennhatquang.fashion.Order.delivery.Dto.OrderItem.OrderItemRequest.VariantAttributesDto;
 import io.github.nguyennhatquang.fashion.common.errors.UnprocessablePayloadException;
 import io.github.nguyennhatquang.fashion.common.kafka.IntegrationEvent;
 import lombok.experimental.UtilityClass;
@@ -49,4 +52,32 @@ public class ParseUtils {
         return Optional.of(new String(header.value(), StandardCharsets.UTF_8));
     }
 
+    public Map<String, Object> toVariantAttributesMap(VariantAttributesDto dto) {
+        if (dto == null) {
+            return new HashMap<>();
+        }
+
+        Map<String, Object> map = new HashMap<>();
+
+        // 3.1 Gắn Options
+        map.put("options", dto.options() != null ? dto.options() : new HashMap<>());
+
+        // 3.2 Gắn Presentation (Ánh xạ chuẩn Snake_case)
+        if (dto.presentation() != null) {
+            Map<String, Object> presentationMap = new HashMap<>();
+            presentationMap.put("brand_name", dto.presentation().brandName());
+            presentationMap.put("variant_image_url", dto.presentation().variantImageUrl());
+            map.put("presentation", presentationMap);
+        }
+
+        // 3.3 Gắn Fulfillment (Ánh xạ chuẩn Snake_case)
+        if (dto.fulfillment() != null) {
+            Map<String, Object> fulfillmentMap = new HashMap<>();
+            fulfillmentMap.put("weight_grams", dto.fulfillment().weightGrams());
+            fulfillmentMap.put("barcode", dto.fulfillment().barcode());
+            map.put("fulfillment", fulfillmentMap);
+        }
+
+        return map;
+    }
 }

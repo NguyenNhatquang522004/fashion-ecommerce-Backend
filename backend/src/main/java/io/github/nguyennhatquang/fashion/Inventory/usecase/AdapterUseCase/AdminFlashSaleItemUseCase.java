@@ -29,7 +29,7 @@ public class AdminFlashSaleItemUseCase implements IAdminFlashSaleItemUseCase {
     private final FlashSaleItemMapper flashSaleItemMapper;
     private final IFlashSaleCampaignRepository flashSaleCampaignRepository;
 
-        private final JpaExactPagePaginationService paginationService;
+    private final JpaExactPagePaginationService paginationService;
 
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
             "createdAt", "updatedAt", "promotionalPrice", "totalQuota");
@@ -40,12 +40,14 @@ public class AdminFlashSaleItemUseCase implements IAdminFlashSaleItemUseCase {
     @Override
     public Result<FlashSaleItem, Exception> createFlashSaleItem(FlashSaleItemCreateRequest request) {
         try {
+
             FlashSaleCampaign campaign = flashSaleCampaignRepository.findById(request.campaignId()).orElse(null);
             if (campaign == null) {
                 return Result.error(new Exception("FlashSaleCampaign not found"));
             }
             FlashSaleItem item = flashSaleItemMapper.toEntity(request);
             item.setCampaign(campaign);
+            campaign.getItems().add(item);
             flashSaleItemRepository.save(item);
             return Result.success(item);
         } catch (Exception e) {
@@ -98,8 +100,7 @@ public class AdminFlashSaleItemUseCase implements IAdminFlashSaleItemUseCase {
                     request,
                     FlashSaleItem.class,
                     ALLOWED_SORT_FIELDS,
-                    ALLOWED_FILTER_FIELDS
-            );
+                    ALLOWED_FILTER_FIELDS);
             return Result.success(response);
         } catch (Exception e) {
             return Result.error(e);

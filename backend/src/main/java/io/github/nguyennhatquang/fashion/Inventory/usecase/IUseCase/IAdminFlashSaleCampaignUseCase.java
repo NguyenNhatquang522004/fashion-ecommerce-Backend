@@ -5,13 +5,15 @@ import java.util.UUID;
 
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.FlashSaleCampaign.FlashSaleCampaignRequest.FlashSaleCampaignCreateRequest;
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.FlashSaleCampaign.FlashSaleCampaignRequest.FlashSaleCampaignUpdateRequest;
+import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.FlashSaleItem.FlashSaleItemRequest.FlashSaleItemCreateRequest;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.FlashSaleCampaign;
 import io.github.nguyennhatquang.fashion.common.request.ExactPageRequestv2;
 import io.github.nguyennhatquang.fashion.common.response.ExactPageResponse;
 import io.github.nguyennhatquang.fashion.common.response.Result;
 
 public interface IAdminFlashSaleCampaignUseCase {
-    Result<FlashSaleCampaign, Exception> createCampaign(FlashSaleCampaignCreateRequest request);
+    Result<FlashSaleCampaign, Exception> createCampaign(FlashSaleCampaignCreateRequest request,
+            List<FlashSaleItemCreateRequest> requestFlashSaleItem);
 
     Result<FlashSaleCampaign, Exception> updateCampaign(FlashSaleCampaignUpdateRequest request, UUID id);
 

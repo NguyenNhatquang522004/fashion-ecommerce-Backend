@@ -16,6 +16,8 @@ import io.github.nguyennhatquang.fashion.common.Enum.OrderStatusEnum;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -45,6 +47,10 @@ public class Order {
 
     @Column(name = "order_code", nullable = false, unique = true, length = 50)
     private String orderCode;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> items = new ArrayList<>();
 
     @Column(name = "subtotal_amount", nullable = false, precision = 15, scale = 2)
     private BigDecimal subtotalAmount;

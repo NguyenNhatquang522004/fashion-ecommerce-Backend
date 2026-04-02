@@ -39,8 +39,9 @@ public class OrderItem {
     @Column(name = "product_id", nullable = false, length = 24)
     private String productId;
 
-    @Column(name = "order_id", nullable = false)
-    private UUID orderId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
 
     @Column(name = "sku_code", nullable = false, length = 100)
     private String skuCode;

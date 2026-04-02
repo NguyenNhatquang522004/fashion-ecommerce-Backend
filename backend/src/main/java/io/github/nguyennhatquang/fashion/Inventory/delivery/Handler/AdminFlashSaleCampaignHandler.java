@@ -1,5 +1,6 @@
 package io.github.nguyennhatquang.fashion.Inventory.delivery.Handler;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.FlashSaleCampaign.FlashSaleCampaignResponse;
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.FlashSaleCampaign.FlashSaleCampaignRequest.FlashSaleCampaignCreateRequest;
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.FlashSaleCampaign.FlashSaleCampaignRequest.FlashSaleCampaignUpdateRequest;
+import io.github.nguyennhatquang.fashion.Inventory.delivery.Dto.FlashSaleItem.FlashSaleItemRequest.FlashSaleItemCreateRequest;
 import io.github.nguyennhatquang.fashion.Inventory.delivery.Mapper.FlashSaleCampaignMapper;
 import io.github.nguyennhatquang.fashion.Inventory.domain.entity.FlashSaleCampaign;
 import io.github.nguyennhatquang.fashion.Inventory.usecase.IUseCase.IAdminFlashSaleCampaignUseCase;
@@ -35,9 +37,11 @@ public class AdminFlashSaleCampaignHandler {
     private final FlashSaleCampaignMapper flashSaleCampaignMapper;
 
     @PostMapping("/create")
-    public ResponseEntity<SystemRes> createCampaign(@Validated @RequestBody FlashSaleCampaignCreateRequest request) {
+    public ResponseEntity<SystemRes> createCampaign(@Validated @RequestBody FlashSaleCampaignCreateRequest request,
+            @Validated @RequestBody List<FlashSaleItemCreateRequest> requestFlashSaleItem) {
         try {
-            Result<FlashSaleCampaign, Exception> result = adminFlashSaleCampaignUseCase.createCampaign(request);
+            Result<FlashSaleCampaign, Exception> result = adminFlashSaleCampaignUseCase.createCampaign(request,
+                    requestFlashSaleItem);
             if (result.hasError()) {
                 return ResponseEntity.badRequest().body(
                         SystemRes.builder().status("400").message(result.error().getMessage()).data(null).build());
@@ -105,13 +109,15 @@ public class AdminFlashSaleCampaignHandler {
     @GetMapping("/get-page")
     public ResponseEntity<SystemRes> getPageCampaign(@Validated ExactPageRequestv2 request) {
         try {
-            Result<ExactPageResponse<FlashSaleCampaign>, Exception> result = adminFlashSaleCampaignUseCase.getAllCampaigns(request);
+            Result<ExactPageResponse<FlashSaleCampaign>, Exception> result = adminFlashSaleCampaignUseCase
+                    .getAllCampaigns(request);
             if (result.hasError()) {
                 return ResponseEntity.badRequest().body(
                         SystemRes.builder().status("400").message(result.error().getMessage()).data(null).build());
             }
             ExactPageResponse<FlashSaleCampaign> page = result.data();
-            ExactPageResponse<FlashSaleCampaignResponse> responseData = ExactPageResponse.<FlashSaleCampaignResponse>builder()
+            ExactPageResponse<FlashSaleCampaignResponse> responseData = ExactPageResponse
+                    .<FlashSaleCampaignResponse>builder()
                     .currentPage(page.getCurrentPage())
                     .totalPages(page.getTotalPages())
                     .totalElements(page.getTotalElements())
