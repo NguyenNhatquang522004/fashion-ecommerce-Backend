@@ -73,7 +73,13 @@ public class AdminFlashSaleItemUseCase implements IAdminFlashSaleItemUseCase {
     @Override
     public Result<Void, Exception> deleteFlashSaleItem(UUID id) {
         try {
-            flashSaleItemRepository.deleteById(id);
+            FlashSaleItem item = flashSaleItemRepository.findById(id).orElse(null);
+            if (item == null) {
+                return Result.error(new Exception("FlashSaleItem not found"));
+            }
+            item.getCampaign().getItems().remove(item);
+            flashSaleCampaignRepository.save(item.getCampaign());
+            flashSaleItemRepository.delete(item);
             return Result.success(null);
         } catch (Exception e) {
             return Result.error(e);

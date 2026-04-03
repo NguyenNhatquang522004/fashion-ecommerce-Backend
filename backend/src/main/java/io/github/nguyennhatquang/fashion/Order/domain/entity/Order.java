@@ -114,4 +114,14 @@ public class Order {
     public int hashCode() {
         return Objects.hash(id, orderCode);
     }
+
+    public void addOrderItem(OrderItem item) {
+        this.items.add(item);
+        item.setOrder(this);
+    }
+
+    public void removeOrderItem(OrderItem item) {
+        items.remove(item);
+        item.setOrder(null);
+    }
 }

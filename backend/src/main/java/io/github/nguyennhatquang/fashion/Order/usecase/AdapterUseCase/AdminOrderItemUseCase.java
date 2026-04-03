@@ -8,7 +8,10 @@ import org.springframework.stereotype.Service;
 import io.github.nguyennhatquang.fashion.Order.delivery.Dto.OrderItem.OrderItemRequest.OrderItemCreateRequest;
 import io.github.nguyennhatquang.fashion.Order.delivery.Dto.OrderItem.OrderItemRequest.OrderItemUpdateRequest;
 import io.github.nguyennhatquang.fashion.Order.delivery.Mapper.OrderItemMapper;
+import io.github.nguyennhatquang.fashion.Order.delivery.Mapper.OrderMapper;
 import io.github.nguyennhatquang.fashion.Order.domain.IRepository.postgres.IOrderItemRepository;
+import io.github.nguyennhatquang.fashion.Order.domain.IRepository.postgres.IOrderRepository;
+import io.github.nguyennhatquang.fashion.Order.domain.entity.Order;
 import io.github.nguyennhatquang.fashion.Order.domain.entity.OrderItem;
 import io.github.nguyennhatquang.fashion.Order.usecase.IUseCase.IAdminOrderItemUseCase;
 import io.github.nguyennhatquang.fashion.common.infrastructure.Function.JpaExactPagePaginationService;
@@ -25,7 +28,8 @@ public class AdminOrderItemUseCase implements IAdminOrderItemUseCase {
     private final IOrderItemRepository orderItemRepository;
     private final OrderItemMapper orderItemMapper;
     private final JpaExactPagePaginationService paginationService;
-
+    private final IOrderRepository orderRepository;
+    private final OrderMapper orderMapper;
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
             "createdAt", "updatedAt", "unitPrice");
 
@@ -35,8 +39,13 @@ public class AdminOrderItemUseCase implements IAdminOrderItemUseCase {
     @Override
     public Result<OrderItem, Exception> createOrderItem(OrderItemCreateRequest request) {
         try {
+            Order order = orderRepository.findById(request.orderId()).orElse(null);
+            if (order == null) {
+                return Result.error(new Exception("Order not found"));
+            }
             OrderItem orderItem = orderItemMapper.toEntity(request);
-            orderItemRepository.save(orderItem);
+            order.addOrderItem(orderItem);
+            orderRepository.save(order);
             return Result.success(orderItem);
         } catch (Exception e) {
             log.error("Error creating OrderItem", e);
@@ -92,8 +101,7 @@ public class AdminOrderItemUseCase implements IAdminOrderItemUseCase {
                     request,
                     OrderItem.class,
                     ALLOWED_SORT_FIELDS,
-                    ALLOWED_FILTER_FIELDS
-            );
+                    ALLOWED_FILTER_FIELDS);
             return Result.success(response);
         } catch (Exception e) {
             log.error("Error getting all OrderItems", e);
